@@ -1,0 +1,42 @@
+{
+    "name": "shureban/laravel-object-mapper",
+    "description": "Laravel SDK mapping data in object",
+    "keywords": [
+        "mapping",
+        "json",
+        "object",
+        "shureban"
+    ],
+    "type": "laravel-package",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Shureban",
+            "email": "Shureban@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "minimum-stability": "dev",
+    "version": "0.0.1",
+    "autoload": {
+        "psr-4": {
+            "Shureban\\LaravelObjectMapper\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Shureban\\LaravelObjectMapper\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^8.0"
+    },
+    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Shureban\\LaravelObjectMapper\\ObjectMapperServiceProvider"
+            ]
+        }
+    }
+}
