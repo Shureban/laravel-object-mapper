@@ -2,7 +2,7 @@
 
 namespace Shureban\LaravelObjectMapper\Types;
 
-class Boolean extends Type
+class BoolType extends Type
 {
     /**
      * @param mixed $value

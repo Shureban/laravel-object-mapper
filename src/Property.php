@@ -61,4 +61,12 @@ class Property
     {
         return $this->type->convert($value);
     }
+
+    /**
+     * @return Type
+     */
+    public function getType(): Type
+    {
+        return $this->type;
+    }
 }

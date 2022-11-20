@@ -2,7 +2,7 @@
 
 namespace Shureban\LaravelObjectMapper\Types;
 
-class Double extends Type
+class FloatType extends Type
 {
     /**
      * @param mixed $value

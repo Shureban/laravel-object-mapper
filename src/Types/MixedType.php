@@ -2,7 +2,7 @@
 
 namespace Shureban\LaravelObjectMapper\Types;
 
-class Any extends Type
+class MixedType extends Type
 {
     /**
      * @param mixed $value

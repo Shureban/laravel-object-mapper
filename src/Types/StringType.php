@@ -2,7 +2,7 @@
 
 namespace Shureban\LaravelObjectMapper\Types;
 
-class Text extends Type
+class StringType extends Type
 {
     /**
      * @param mixed $value

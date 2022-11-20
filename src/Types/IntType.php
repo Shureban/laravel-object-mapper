@@ -2,7 +2,7 @@
 
 namespace Shureban\LaravelObjectMapper\Types;
 
-class Integer extends Type
+class IntType extends Type
 {
     /**
      * @param mixed $value

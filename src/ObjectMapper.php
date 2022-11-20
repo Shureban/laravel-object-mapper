@@ -5,6 +5,7 @@ namespace Shureban\LaravelObjectMapper;
 use Illuminate\Foundation\Http\FormRequest;
 use Shureban\LaravelObjectMapper\Attributes\SetterName;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownDataFormatException;
+use Shureban\LaravelObjectMapper\Types\CustomObjectTypeInterface;
 
 class ObjectMapper
 {
@@ -40,7 +41,7 @@ class ObjectMapper
      */
     public function mapFromJson(string $data): object
     {
-        $data = json_decode($data);
+        $data = json_decode($data, true);
 
         return $this->mapFromArray($data);
     }
@@ -60,14 +61,25 @@ class ObjectMapper
             $objectPropertyName = $property->getObjectPropertyName();
             $dataPropertyName   = $property->getDataPropertyName();
             $setterName         = (string)new SetterName($objectPropertyName);
-            $value              = $data[$dataPropertyName] ?? $property->getDefaultValue();
+
+            if (!isset($data[$dataPropertyName])) {
+                continue;
+            }
+
+            $value = $data[$dataPropertyName];
 
             if ($analyzer->hasSetter($setterName)) {
                 call_user_func_array([$this->result, $setterName], [$value, $data]);
+                continue;
             }
-            else {
-                $this->result->{$objectPropertyName} = $property->convert($value);
+
+            $convertedValue = $property->convert($value);
+            
+            if ($property->getType() instanceof CustomObjectTypeInterface) {
+                $convertedValue = (new ObjectMapper($convertedValue))->mapFromArray($value);
             }
+
+            $this->result->{$objectPropertyName} = $convertedValue;
         }
 
         return $this->result;
