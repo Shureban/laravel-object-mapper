@@ -1,6 +1,8 @@
 <?php
 
-namespace Shureban\LaravelObjectMapper\Types;
+namespace Shureban\LaravelObjectMapper\Types\SimpleTypes;
+
+use Shureban\LaravelObjectMapper\Types\Type;
 
 class BoolType extends Type
 {
@@ -12,8 +14,8 @@ class BoolType extends Type
     public function convert(mixed $value): bool
     {
         return match ($value) {
-            true, 'true', '1' => true,
-            default           => false
+            true, 'true', '1', 1 => true,
+            default              => false
         };
     }
 

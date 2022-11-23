@@ -1,6 +1,8 @@
 <?php
 
-namespace Shureban\LaravelObjectMapper\Types;
+namespace Shureban\LaravelObjectMapper\Types\SimpleTypes;
+
+use Shureban\LaravelObjectMapper\Types\Type;
 
 class IntType extends Type
 {

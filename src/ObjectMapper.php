@@ -74,7 +74,7 @@ class ObjectMapper
             }
 
             $convertedValue = $property->convert($value);
-            
+
             if ($property->getType() instanceof CustomObjectTypeInterface) {
                 $convertedValue = (new ObjectMapper($convertedValue))->mapFromArray($value);
             }

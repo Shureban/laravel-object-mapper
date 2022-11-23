@@ -8,9 +8,8 @@ use Shureban\LaravelObjectMapper\Types\Type;
 
 class Property
 {
-    private const DocVarRegex = '/var\s(?<type>\w+)?\s?\$(?<name>\w+)/';
-
     private Type               $type;
+    private PhpDoc             $phpDoc;
     private ReflectionProperty $property;
 
     /**
@@ -19,6 +18,7 @@ class Property
     public function __construct(ReflectionProperty $property)
     {
         $this->property = $property;
+        $this->phpDoc   = new PhpDoc($property->getDocComment());
         $this->type     = Factory::make($property);
     }
 
@@ -35,13 +35,7 @@ class Property
      */
     public function getDataPropertyName(): string
     {
-        $regexResult = [];
-
-        if (preg_match(self::DocVarRegex, $this->property->getDocComment(), $regexResult)) {
-            return $regexResult['name'];
-        }
-
-        return $this->property->getName();
+        return $this->phpDoc->getPropertyName() ?: $this->property->getName();
     }
 
     /**

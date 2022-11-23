@@ -1,10 +1,11 @@
 <?php
 
-namespace Shureban\LaravelObjectMapper\Types;
+namespace Shureban\LaravelObjectMapper\Types\BoxTypes;
 
 use Carbon\Carbon;
 use DateTimeZone;
 use Exception;
+use Shureban\LaravelObjectMapper\Types\SimpleTypes\ObjectType;
 
 class CarbonType extends ObjectType
 {

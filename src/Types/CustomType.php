@@ -4,8 +4,9 @@ namespace Shureban\LaravelObjectMapper\Types;
 
 use ReflectionClass;
 use ReflectionException;
+use Shureban\LaravelObjectMapper\Types\SimpleTypes\ObjectType;
 
-class WithoutConstructorType extends ObjectType implements CustomObjectTypeInterface
+class CustomType extends ObjectType implements CustomObjectTypeInterface
 {
     /**
      * @param mixed $value
