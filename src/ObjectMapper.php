@@ -5,7 +5,6 @@ namespace Shureban\LaravelObjectMapper;
 use Illuminate\Foundation\Http\FormRequest;
 use Shureban\LaravelObjectMapper\Attributes\SetterName;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownDataFormatException;
-use Shureban\LaravelObjectMapper\Types\CustomObjectTypeInterface;
 
 class ObjectMapper
 {
@@ -73,13 +72,7 @@ class ObjectMapper
                 continue;
             }
 
-            $convertedValue = $property->convert($value);
-
-            if ($property->getType() instanceof CustomObjectTypeInterface) {
-                $convertedValue = (new ObjectMapper($convertedValue))->mapFromArray($value);
-            }
-
-            $this->result->{$objectPropertyName} = $convertedValue;
+            $this->result->{$objectPropertyName} = $property->convert($value);
         }
 
         return $this->result;

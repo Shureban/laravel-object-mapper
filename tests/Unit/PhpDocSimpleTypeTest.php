@@ -3,23 +3,8 @@
 namespace Shureban\LaravelObjectMapper\Tests\Unit;
 
 use Shureban\LaravelObjectMapper\ObjectMapper;
+use Shureban\LaravelObjectMapper\Tests\Unit\Structs\PhpDocSimpleTypeClass;
 use Tests\TestCase;
-
-class PhpDocSimpleTypeClass
-{
-    /** @var int */
-    public $int;
-    /** @var float */
-    public $float;
-    /** @var string */
-    public $string;
-    /** @var bool */
-    public $bool;
-    /** @var array */
-    public $array;
-    /** @var object */
-    public $object;
-}
 
 class PhpDocSimpleTypeTest extends TestCase
 {

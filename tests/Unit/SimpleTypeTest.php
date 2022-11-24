@@ -3,17 +3,8 @@
 namespace Shureban\LaravelObjectMapper\Tests\Unit;
 
 use Shureban\LaravelObjectMapper\ObjectMapper;
+use Shureban\LaravelObjectMapper\Tests\Unit\Structs\SimpleTypeClass;
 use Tests\TestCase;
-
-class SimpleTypeClass
-{
-    public int    $int;
-    public float  $float;
-    public string $string;
-    public bool   $bool;
-    public array  $array;
-    public object $object;
-}
 
 class SimpleTypeTest extends TestCase
 {

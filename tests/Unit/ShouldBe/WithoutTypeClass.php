@@ -1,6 +1,6 @@
 <?php
 
-namespace Shureban\LaravelObjectMapper\Tests\Structs;
+namespace Shureban\LaravelObjectMapper\Tests\Unit\Structs;
 
 class WithoutTypeClass
 {
