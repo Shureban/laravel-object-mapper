@@ -5,7 +5,7 @@ namespace Shureban\LaravelObjectMapper;
 class PhpDoc
 {
     private const PropertyNameRegex = '/var(.*)?\$(?<name>\w+)/';
-    private const TypeNameRegex     = '/var\s(?<type>\w+)(.*\$)?/';
+    private const TypeNameRegex     = '/var\s(?<type>[\\a-zA-Z0-9]+)\s\$?/';
 
     private string $phpDoc;
 
