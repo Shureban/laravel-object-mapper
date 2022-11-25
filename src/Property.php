@@ -2,6 +2,7 @@
 
 namespace Shureban\LaravelObjectMapper;
 
+use ReflectionException;
 use ReflectionProperty;
 use Shureban\LaravelObjectMapper\Types\Factory;
 use Shureban\LaravelObjectMapper\Types\Type;
@@ -14,6 +15,8 @@ class Property
 
     /**
      * @param ReflectionProperty $property
+     *
+     * @throws ReflectionException
      */
     public function __construct(ReflectionProperty $property)
     {
