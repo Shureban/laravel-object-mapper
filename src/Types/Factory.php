@@ -15,6 +15,7 @@ use Shureban\LaravelObjectMapper\Types\BoxTypes\CarbonType;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\CollectionType;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\DateTimeType;
 use Shureban\LaravelObjectMapper\Types\Custom\CustomType;
+use Shureban\LaravelObjectMapper\Types\Custom\EnumType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\ArrayType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\BoolType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\FloatType;
@@ -68,12 +69,20 @@ class Factory
             return $boxType;
         }
 
+        if (enum_exists($type)) {
+            return new EnumType($type);
+        }
+
         if (class_exists($type)) {
             return new CustomType((new ReflectionClass($type))->newInstanceWithoutConstructor());
         }
 
         $classUses = new ClassExtraInformation($property->getDeclaringClass());
         $namespace = $classUses->getFullObjectUseNamespace($type);
+
+        if (enum_exists($namespace)) {
+            return new EnumType($namespace);
+        }
 
         return new CustomType((new ReflectionClass($namespace))->newInstanceWithoutConstructor());
     }

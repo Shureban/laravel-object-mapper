@@ -17,7 +17,7 @@ use Tests\TestCase;
 
 class CustomTypeTest extends TestCase
 {
-    public function _test_StrictTypes()
+    public function test_StrictTypes()
     {
         $simpleClass             = new CustomTypeStrictSimpleClass();
         $simpleClass->int        = 10;
