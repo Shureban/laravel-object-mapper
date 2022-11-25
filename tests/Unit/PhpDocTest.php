@@ -23,6 +23,9 @@ DOC
 
     public function test_getPropertyType()
     {
+        $this->assertEquals('string', (new PhpDoc('/** @var string[] */'))->getPropertyType());
+        $this->assertEquals('string', (new PhpDoc('/** @var string[][] */'))->getPropertyType());
+        $this->assertEquals('string', (new PhpDoc('/** @var string[][][] */'))->getPropertyType());
         $this->assertEquals('string', (new PhpDoc('/** @var string */'))->getPropertyType());
         $this->assertEquals('string', (new PhpDoc('/** @var string $variable */'))->getPropertyType());
         $this->assertEquals('SomeClass', (new PhpDoc('/** @var SomeClass $variable */'))->getPropertyType());
@@ -34,5 +37,17 @@ DOC
 */
 DOC
         ))->getPropertyType());
+
+
+        //        $this->assertEquals('string', (new PhpDoc('/** @var string[] */'))->getPropertyType());
+    }
+
+    public function test_isArrayOf()
+    {
+        $this->assertFalse((new PhpDoc('/** @var string */'))->isArrayOf());
+        $this->assertTrue((new PhpDoc('/** @var string[] */'))->isArrayOf());
+        $this->assertTrue((new PhpDoc('/** @var string[][] */'))->isArrayOf());
+        $this->assertTrue((new PhpDoc('/** @var string[][] */'))->isArrayOf());
+        $this->assertTrue((new PhpDoc('/** @var string[] $variable */'))->isArrayOf());
     }
 }

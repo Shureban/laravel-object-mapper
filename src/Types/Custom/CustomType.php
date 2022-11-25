@@ -1,6 +1,6 @@
 <?php
 
-namespace Shureban\LaravelObjectMapper\Types;
+namespace Shureban\LaravelObjectMapper\Types\Custom;
 
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\ObjectType;

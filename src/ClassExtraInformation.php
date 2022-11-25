@@ -25,6 +25,10 @@ class ClassExtraInformation
      */
     public function getFullObjectUseNamespace(string $objectName): ?string
     {
+        if (class_exists($objectName)) {
+            return $objectName;
+        }
+
         if (preg_match_all(self::UseRegex, $this->getClassFileContent(), $useRegexResult)) {
             foreach (current($useRegexResult) as $useLine) {
                 if (preg_match(self::UseNamespaceRegex, $useLine, $lineRegexResult) === 0) {

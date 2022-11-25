@@ -37,7 +37,8 @@ class ClassExtraInformationTest extends TestCase
             'Tests\TestCase',
             (new ClassExtraInformation($class))->getFullObjectUseNamespace('TestCase')
         );
-        $this->assertNull(
+        $this->assertEquals(
+            'ReflectionClass',
             (new ClassExtraInformation($class))->getFullObjectUseNamespace('ReflectionClass')
         );
     }

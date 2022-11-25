@@ -14,6 +14,7 @@ use Shureban\LaravelObjectMapper\PhpDoc;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\CarbonType;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\CollectionType;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\DateTimeType;
+use Shureban\LaravelObjectMapper\Types\Custom\CustomType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\ArrayType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\BoolType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\FloatType;
@@ -50,6 +51,10 @@ class Factory
 
         if ($simpleType !== null) {
             return $simpleType;
+        }
+
+        if ($phpDoc->isArrayOf()) {
+            dd(12);
         }
 
         $boxType = match ($type) {
