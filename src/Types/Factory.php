@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
+use Shureban\LaravelObjectMapper\ClassExtraInformation;
 use Shureban\LaravelObjectMapper\PhpDoc;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\CarbonType;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\CollectionType;
@@ -62,8 +63,13 @@ class Factory
             return $boxType;
         }
 
-        $class = new ReflectionClass($type);
+        if (class_exists($type)) {
+            return new CustomType((new ReflectionClass($type))->newInstanceWithoutConstructor());
+        }
 
-        return new CustomType($class->newInstanceWithoutConstructor());
+        $classUses = new ClassExtraInformation($property->getDeclaringClass());
+        $namespace = $classUses->getFullObjectUseNamespace($type);
+
+        return new CustomType((new ReflectionClass($namespace))->newInstanceWithoutConstructor());
     }
 }

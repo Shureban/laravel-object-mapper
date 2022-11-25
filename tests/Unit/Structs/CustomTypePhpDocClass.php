@@ -8,11 +8,11 @@ use Illuminate\Support\Collection;
 
 class CustomTypePhpDocClass
 {
-    /** @var \Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypePhpDocSimpleClass */
+    /** @var CustomTypePhpDocSimpleClass */
     public $simpleClass;
-    /** @var \Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypePhpDocBoxClass */
+    /** @var CustomTypePhpDocBoxClass */
     public $boxClass;
-    /** @var \Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypePhpDocCustomClass */
+    /** @var CustomTypePhpDocCustomClass */
     public $customClass;
 }
 
