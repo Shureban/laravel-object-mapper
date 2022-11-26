@@ -47,7 +47,28 @@ DOC
         $this->assertFalse((new PhpDoc('/** @var string */'))->isArrayOf());
         $this->assertTrue((new PhpDoc('/** @var string[] */'))->isArrayOf());
         $this->assertTrue((new PhpDoc('/** @var string[][] */'))->isArrayOf());
-        $this->assertTrue((new PhpDoc('/** @var string[][] */'))->isArrayOf());
+        $this->assertTrue((new PhpDoc('/** @var string[][][] */'))->isArrayOf());
         $this->assertTrue((new PhpDoc('/** @var string[] $variable */'))->isArrayOf());
+        $this->assertTrue((new PhpDoc(<<<DOC
+/**
+* @var string[][][] \$variable
+*/
+DOC
+        ))->isArrayOf());
+    }
+
+    public function test_arrayNestedLevel()
+    {
+        $this->assertEquals(0, (new PhpDoc('/** @var string */'))->arrayNestedLevel());
+        $this->assertEquals(1, (new PhpDoc('/** @var string[] */'))->arrayNestedLevel());
+        $this->assertEquals(2, (new PhpDoc('/** @var string[][] */'))->arrayNestedLevel());
+        $this->assertEquals(3, (new PhpDoc('/** @var string[][][] */'))->arrayNestedLevel());
+        $this->assertEquals(1, (new PhpDoc('/** @var string[] $variable */'))->arrayNestedLevel());
+        $this->assertEquals(3, (new PhpDoc(<<<DOC
+/**
+* @var string[][][] \$variable
+*/
+DOC
+        ))->arrayNestedLevel());
     }
 }
