@@ -1,6 +1,6 @@
 <?php
 
-namespace Shureban\LaravelObjectMapper\Types\BoxTypes;
+namespace Shureban\LaravelObjectMapper\Types\SimpleTypes;
 
 use Shureban\LaravelObjectMapper\Types\Type;
 
