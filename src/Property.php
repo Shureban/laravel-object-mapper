@@ -16,7 +16,7 @@ class Property
     /**
      * @param ReflectionProperty $property
      *
-     * @throws ReflectionException
+     * @throws ReflectionException|Exceptions\UnknownPropertyTypeException
      */
     public function __construct(ReflectionProperty $property)
     {

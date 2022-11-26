@@ -2,6 +2,7 @@
 
 namespace Shureban\LaravelObjectMapper\Attributes;
 
+use Str;
 use Stringable;
 
 class SetterName implements Stringable
@@ -21,6 +22,6 @@ class SetterName implements Stringable
      */
     public function __toString(): string
     {
-        return sprintf('set%s', ucfirst($this->paramName));
+        return Str::camel(sprintf('set_%s', $this->paramName));
     }
 }
