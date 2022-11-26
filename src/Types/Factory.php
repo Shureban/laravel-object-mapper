@@ -10,10 +10,12 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 use Shureban\LaravelObjectMapper\ClassExtraInformation;
+use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
 use Shureban\LaravelObjectMapper\PhpDoc;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\CarbonType;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\CollectionType;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\DateTimeType;
+use Shureban\LaravelObjectMapper\Types\Custom\ArrayOfType;
 use Shureban\LaravelObjectMapper\Types\Custom\CustomType;
 use Shureban\LaravelObjectMapper\Types\Custom\EnumType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\ArrayType;
@@ -29,17 +31,17 @@ class Factory
      * @param ReflectionProperty $property
      *
      * @return Type
-     * @throws ReflectionException
+     * @throws ReflectionException|UnknownPropertyTypeException
      */
     public static function make(ReflectionProperty $property): Type
     {
         $phpDoc = new PhpDoc($property->getDocComment());
 
-        if (!$property->hasType() && is_null($phpDoc->getPropertyType())) {
+        if (!$property->hasType() && !$phpDoc->hasType()) {
             return new MixedType();
         }
 
-        $type       = $property->hasType() ? $property->getType()->getName() : $phpDoc->getPropertyType();
+        $type       = $phpDoc->hasType() ? $phpDoc->getPropertyType() : $property->getType()->getName();
         $simpleType = match ($type) {
             'string'          => new StringType(),
             'float', 'double' => new FloatType(),
@@ -51,11 +53,7 @@ class Factory
         };
 
         if ($simpleType !== null) {
-            return $simpleType;
-        }
-
-        if ($phpDoc->isArrayOf()) {
-            dd(12);
+            return $phpDoc->isArrayOf() ? new ArrayOfType($simpleType, $phpDoc->arrayNestedLevel()) : $simpleType;
         }
 
         $boxType = match ($type) {
@@ -66,24 +64,36 @@ class Factory
         };
 
         if ($boxType !== null) {
-            return $boxType;
+            return $phpDoc->isArrayOf() ? new ArrayOfType($boxType, $phpDoc->arrayNestedLevel()) : $boxType;
         }
 
         if (enum_exists($type)) {
-            return new EnumType($type);
+            $type = new EnumType($type);
+
+            return $phpDoc->isArrayOf() ? new ArrayOfType($type, $phpDoc->arrayNestedLevel()) : $type;
         }
 
         if (class_exists($type)) {
-            return new CustomType((new ReflectionClass($type))->newInstanceWithoutConstructor());
+            $type = new CustomType((new ReflectionClass($type))->newInstanceWithoutConstructor());
+
+            return $phpDoc->isArrayOf() ? new ArrayOfType($type, $phpDoc->arrayNestedLevel()) : $type;
         }
 
         $classUses = new ClassExtraInformation($property->getDeclaringClass());
         $namespace = $classUses->getFullObjectUseNamespace($type);
 
         if (enum_exists($namespace)) {
-            return new EnumType($namespace);
+            $type = new EnumType($namespace);
+
+            return $phpDoc->isArrayOf() ? new ArrayOfType($type, $phpDoc->arrayNestedLevel()) : $type;
         }
 
-        return new CustomType((new ReflectionClass($namespace))->newInstanceWithoutConstructor());
+        if (class_exists($namespace)) {
+            $type = new CustomType((new ReflectionClass($namespace))->newInstanceWithoutConstructor());
+
+            return $phpDoc->isArrayOf() ? new ArrayOfType($type, $phpDoc->arrayNestedLevel()) : $type;
+        }
+
+        throw new UnknownPropertyTypeException($property->getName());
     }
 }

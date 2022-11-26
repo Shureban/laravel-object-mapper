@@ -2,25 +2,40 @@
 
 namespace Shureban\LaravelObjectMapper\Types\Custom;
 
-use Shureban\LaravelObjectMapper\ObjectMapper;
-use Shureban\LaravelObjectMapper\Types\SimpleTypes\ObjectType;
+use Shureban\LaravelObjectMapper\Types\Type;
 
-class ArrayOfType extends ObjectType
+class ArrayOfType extends Type
 {
-    private object $type;
+    private Type $type;
+    private int  $nestedLevel;
 
-    public function __construct(object $type)
+    /**
+     * @param Type $type
+     * @param int  $nestedLevel
+     */
+    public function __construct(Type $type, int $nestedLevel = 1)
     {
-        $this->type = $type;
+        $this->type        = $type;
+        $this->nestedLevel = $nestedLevel;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDefaultValue(): array
+    {
+        return [];
     }
 
     /**
      * @param mixed $value
      *
-     * @return object
+     * @return array
      */
-    public function convert(mixed $value): object
+    public function convert(mixed $value): array
     {
-        return (new ObjectMapper($this->type))->mapFromArray($value);
+        return array_map(fn(mixed $nestedValue) => $this->nestedLevel === 1
+            ? $this->type->convert($nestedValue)
+            : (new static($this->type, $this->nestedLevel - 1))->convert($nestedValue), $value);
     }
 }
