@@ -79,6 +79,10 @@ class ObjectMapper
                 continue;
             }
 
+            if ($property->isReadOnly()) {
+                continue;
+            }
+
             $this->result->{$objectPropertyName} = $property->convert($value);
         }
 

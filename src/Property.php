@@ -60,6 +60,14 @@ class Property
     }
 
     /**
+     * @return bool
+     */
+    public function isReadOnly(): bool
+    {
+        return $this->property->isReadOnly();
+    }
+
+    /**
      * @return Type
      */
     public function getType(): Type
