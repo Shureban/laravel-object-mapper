@@ -3,8 +3,10 @@
 namespace Shureban\LaravelObjectMapper;
 
 use Illuminate\Foundation\Http\FormRequest;
+use ReflectionException;
 use Shureban\LaravelObjectMapper\Attributes\SetterName;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownDataFormatException;
+use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
 
 class ObjectMapper
 {
@@ -22,6 +24,8 @@ class ObjectMapper
      * @param string|array|FormRequest $data
      *
      * @return object
+     * @throws ReflectionException
+     * @throws UnknownPropertyTypeException
      */
     public function map(string|array|FormRequest $data): object
     {
@@ -37,20 +41,23 @@ class ObjectMapper
      * @param string $data
      *
      * @return object
+     * @throws ReflectionException
+     * @throws UnknownPropertyTypeException
      */
     public function mapFromJson(string $data): object
     {
-        $data = json_decode($data, true);
-
-        return $this->mapFromArray($data);
+        return $this->mapData(json_decode($data, true), $data);
     }
 
     /**
-     * @param array $data
+     * @param array                    $data
+     * @param string|array|FormRequest $defaultData
      *
      * @return object
+     * @throws ReflectionException
+     * @throws UnknownPropertyTypeException
      */
-    public function mapFromArray(array $data): object
+    private function mapData(array $data, string|array|FormRequest $defaultData): object
     {
         $analyzer   = new ObjectAnalyzer($this->result);
         $properties = $analyzer->getProperties();
@@ -68,7 +75,7 @@ class ObjectMapper
             $value = $data[$dataPropertyName];
 
             if ($analyzer->hasSetter($setterName)) {
-                call_user_func_array([$this->result, $setterName], [$value, $data]);
+                call_user_func_array([$this->result, $setterName], [$value, $defaultData]);
                 continue;
             }
 
@@ -79,15 +86,29 @@ class ObjectMapper
     }
 
     /**
+     * @param array $data
+     *
+     * @return object
+     * @throws UnknownPropertyTypeException
+     * @throws ReflectionException
+     */
+    public function mapFromArray(array $data): object
+    {
+        return $this->mapData($data, $data);
+    }
+
+    /**
      * @param FormRequest $request
      * @param bool        $onlyValidated
      *
      * @return object
+     * @throws ReflectionException
+     * @throws UnknownPropertyTypeException
      */
     public function mapFromRequest(FormRequest $request, bool $onlyValidated = true): object
     {
         $data = $onlyValidated ? $request->validated() : $request->all();
 
-        return $this->mapFromArray($data);
+        return $this->mapData($data, $request);
     }
 }
