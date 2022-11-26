@@ -1,6 +1,8 @@
 <?php
 
-namespace Shureban\LaravelObjectMapper\Types;
+namespace Shureban\LaravelObjectMapper\Types\BoxTypes;
+
+use Shureban\LaravelObjectMapper\Types\Type;
 
 class MixedType extends Type
 {

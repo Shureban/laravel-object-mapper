@@ -8,6 +8,12 @@ use Tests\TestCase;
 
 class SimpleTypeTest extends TestCase
 {
+    public function test_mixed()
+    {
+        $this->assertEquals(10, (new ObjectMapper(new SimpleTypeClass()))->mapFromJson('{"mixed": 10}')->mixed);
+        $this->assertEquals(['mixed' => 'type'], (new ObjectMapper(new SimpleTypeClass()))->mapFromArray(['mixed' => ['mixed' => 'type']])->mixed);
+    }
+
     public function test_int()
     {
         $this->assertEquals(10, (new ObjectMapper(new SimpleTypeClass()))->mapFromJson('{"int": 10}')->int);

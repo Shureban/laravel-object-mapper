@@ -15,6 +15,7 @@ use Shureban\LaravelObjectMapper\PhpDoc;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\CarbonType;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\CollectionType;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\DateTimeType;
+use Shureban\LaravelObjectMapper\Types\BoxTypes\MixedType;
 use Shureban\LaravelObjectMapper\Types\Custom\ArrayOfType;
 use Shureban\LaravelObjectMapper\Types\Custom\CustomType;
 use Shureban\LaravelObjectMapper\Types\Custom\EnumType;
@@ -49,6 +50,7 @@ class Factory
             'bool', 'boolean' => new BoolType(),
             'array'           => new ArrayType(),
             'object'          => new ObjectType(),
+            'mixed'           => new MixedType(),
             default           => null,
         };
 
