@@ -8,6 +8,7 @@ use Shureban\LaravelObjectMapper\Types\BoxTypes\CollectionType;
 use Shureban\LaravelObjectMapper\Types\BoxTypes\DateTimeType;
 use Shureban\LaravelObjectMapper\Types\Custom\CustomType;
 use Shureban\LaravelObjectMapper\Types\Custom\EnumType;
+use Shureban\LaravelObjectMapper\Types\Custom\ModelType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\ArrayType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\BoolType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\FloatType;
@@ -41,6 +42,7 @@ return [
         'other'  => [
             'custom' => CustomType::class,
             'enum'   => EnumType::class,
+            'model'  => ModelType::class,
         ],
     ],
 ];

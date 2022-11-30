@@ -2,6 +2,7 @@
 
 namespace Shureban\LaravelObjectMapper\Types;
 
+use Illuminate\Database\Eloquent\Model;
 use ReflectionClass;
 use ReflectionException;
 
@@ -21,13 +22,20 @@ class CustomTypeFactory
             return !is_null($typeNamespace) ? new $typeNamespace($typeName) : null;
         }
 
-        if (class_exists($typeName)) {
-            $instance      = (new ReflectionClass($typeName))->newInstanceWithoutConstructor();
-            $typeNamespace = config('object_mapper.types.other.custom');
+        if (!class_exists($typeName)) {
+            return null;
+        }
+
+        $instance = (new ReflectionClass($typeName))->newInstanceWithoutConstructor();
+
+        if ($instance instanceof Model) {
+            $typeNamespace = config('object_mapper.types.other.model');
 
             return !is_null($typeNamespace) ? new $typeNamespace($instance) : null;
         }
 
-        return null;
+        $typeNamespace = config('object_mapper.types.other.custom');
+
+        return !is_null($typeNamespace) ? new $typeNamespace($instance) : null;
     }
 }
