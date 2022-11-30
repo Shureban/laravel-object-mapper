@@ -15,7 +15,7 @@ class SomeModel extends Model
         $this->id = $id;
     }
 
-    public function find($id, $columns = []): ?SomeModel
+    public static function find($id, $columns = []): ?SomeModel
     {
         return new SomeModel($id);
     }
@@ -32,6 +32,6 @@ class ModelTypeClass
      */
     public function setSetterModel(mixed $value): void
     {
-        $this->setterModel = (new SomeModel())->find($value);
+        $this->setterModel = SomeModel::find($value);
     }
 }

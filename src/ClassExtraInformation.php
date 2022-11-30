@@ -13,6 +13,9 @@ class ClassExtraInformation
     private ReflectionClass $class;
     private string          $content = '';
 
+    /**
+     * @param ReflectionClass $class
+     */
     public function __construct(ReflectionClass $class)
     {
         $this->class = $class;
@@ -45,11 +48,7 @@ class ClassExtraInformation
 
         $namespace = sprintf('%s\%s', $this->getNamespace(), $objectName);
 
-        if (class_exists($namespace)) {
-            return $namespace;
-        }
-
-        return null;
+        return class_exists($namespace) ? $namespace : null;
     }
 
     /**

@@ -2,29 +2,42 @@
 
 namespace Shureban\LaravelObjectMapper\Types\Custom;
 
-use ReflectionException;
-use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
+use ReflectionClass;
+use Shureban\LaravelObjectMapper\Exceptions\WrongConstructorParametersNumberException;
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\ObjectType;
 
 class CustomType extends ObjectType
 {
-    private object $customObject;
+    private string $classNamespace;
 
-    public function __construct(object $customObject)
+    public function __construct(string $classNamespace)
     {
-        $this->customObject = $customObject;
+        $this->classNamespace = $classNamespace;
     }
 
     /**
      * @param mixed $value
      *
      * @return object
-     * @throws ReflectionException
-     * @throws UnknownPropertyTypeException
+     * @throws WrongConstructorParametersNumberException
      */
     public function convert(mixed $value): object
     {
-        return (new ObjectMapper($this->customObject))->mapFromArray($value);
+        $reflection       = new ReflectionClass($this->classNamespace);
+        $constructor      = $reflection->getConstructor();
+        $emptyConstructor = !is_null($constructor) && $constructor->getNumberOfParameters() === 0;
+
+        if (is_null($constructor) || $emptyConstructor || gettype($value) === 'array') {
+            return (new ObjectMapper(new $this->classNamespace()))->mapFromArray($value);
+        }
+
+        $tooManyRequiredParameters = $constructor->getNumberOfRequiredParameters() > 1;
+
+        if ($tooManyRequiredParameters) {
+            throw new WrongConstructorParametersNumberException($this->classNamespace);
+        }
+
+        return new $this->classNamespace($value);
     }
 }

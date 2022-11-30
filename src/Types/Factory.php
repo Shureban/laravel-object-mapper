@@ -2,7 +2,6 @@
 
 namespace Shureban\LaravelObjectMapper\Types;
 
-use ReflectionException;
 use ReflectionProperty;
 use Shureban\LaravelObjectMapper\ClassExtraInformation;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
@@ -15,7 +14,6 @@ class Factory
      * @param ReflectionProperty $property
      *
      * @return Type
-     * @throws ReflectionException|UnknownPropertyTypeException
      */
     public static function make(ReflectionProperty $property): Type
     {
@@ -44,9 +42,9 @@ class Factory
             return $phpDoc->isArrayOf() ? new ArrayOfType($customType, $phpDoc->arrayNestedLevel()) : $customType;
         }
 
-        $classUses  = new ClassExtraInformation($property->getDeclaringClass());
-        $namespace  = $classUses->getFullObjectUseNamespace($type);
-        $customType = CustomTypeFactory::make($namespace);
+        $extraInformation = new ClassExtraInformation($property->getDeclaringClass());
+        $namespace        = $extraInformation->getFullObjectUseNamespace($type);
+        $customType       = CustomTypeFactory::make($namespace);
 
         if ($customType !== null) {
             return $phpDoc->isArrayOf() ? new ArrayOfType($customType, $phpDoc->arrayNestedLevel()) : $customType;

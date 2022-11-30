@@ -7,11 +7,11 @@ use Shureban\LaravelObjectMapper\Types\SimpleTypes\ObjectType;
 
 class ModelType extends ObjectType
 {
-    private Model $model;
+    private string $modelNamespace;
 
-    public function __construct(Model $model)
+    public function __construct(string $modelNamespace)
     {
-        $this->model = $model;
+        $this->modelNamespace = $modelNamespace;
     }
 
     /**
@@ -21,6 +21,6 @@ class ModelType extends ObjectType
      */
     public function convert(mixed $value): Model
     {
-        return $this->model->find($value);
+        return call_user_func([$this->modelNamespace, 'find'], $value);
     }
 }

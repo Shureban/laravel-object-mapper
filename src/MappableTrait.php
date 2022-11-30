@@ -3,7 +3,6 @@
 namespace Shureban\LaravelObjectMapper;
 
 use Illuminate\Foundation\Http\FormRequest;
-use ReflectionException;
 
 trait MappableTrait
 {
@@ -11,8 +10,6 @@ trait MappableTrait
      * @param string|array|FormRequest $data
      *
      * @return $this
-     * @throws Exceptions\UnknownPropertyTypeException
-     * @throws ReflectionException
      */
     public function map(string|array|FormRequest $data): static
     {
@@ -23,8 +20,6 @@ trait MappableTrait
      * @param string $data
      *
      * @return $this
-     * @throws Exceptions\UnknownPropertyTypeException
-     * @throws ReflectionException
      */
     public function mapFromJson(string $data): static
     {
@@ -35,8 +30,6 @@ trait MappableTrait
      * @param array $data
      *
      * @return $this
-     * @throws Exceptions\UnknownPropertyTypeException
-     * @throws ReflectionException
      */
     public function mapFromArray(array $data): static
     {
@@ -48,8 +41,6 @@ trait MappableTrait
      * @param bool        $onlyValidated
      *
      * @return $this
-     * @throws Exceptions\UnknownPropertyTypeException
-     * @throws ReflectionException
      */
     public function mapFromRequest(FormRequest $request, bool $onlyValidated = true): static
     {

@@ -15,7 +15,7 @@ use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypeStrictCustomClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypeStrictSimpleClass;
 use Tests\TestCase;
 
-class CustomTypeTest extends TestCase
+class CustomTypeWithoutConstructorTest extends TestCase
 {
     public function test_StrictTypes()
     {

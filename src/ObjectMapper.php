@@ -3,10 +3,9 @@
 namespace Shureban\LaravelObjectMapper;
 
 use Illuminate\Foundation\Http\FormRequest;
-use ReflectionException;
 use Shureban\LaravelObjectMapper\Attributes\SetterName;
+use Shureban\LaravelObjectMapper\Exceptions\ParseJsonException;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownDataFormatException;
-use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
 
 class ObjectMapper
 {
@@ -24,8 +23,7 @@ class ObjectMapper
      * @param string|array|FormRequest $data
      *
      * @return mixed
-     * @throws ReflectionException
-     * @throws UnknownPropertyTypeException
+     * @throws ParseJsonException
      */
     public function map(string|array|FormRequest $data): object
     {
@@ -38,15 +36,21 @@ class ObjectMapper
     }
 
     /**
-     * @param string $data
+     * @param string $json
      *
      * @return mixed
-     * @throws ReflectionException
-     * @throws UnknownPropertyTypeException
+     * @throws ParseJsonException
      */
-    public function mapFromJson(string $data): object
+    public function mapFromJson(string $json): object
     {
-        return $this->mapData(json_decode($data, true), $data);
+        $data  = json_decode($json, true);
+        $error = json_last_error_msg();
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new ParseJsonException($error);
+        }
+
+        return $this->mapData($data, $json);
     }
 
     /**
@@ -54,8 +58,6 @@ class ObjectMapper
      * @param string|array|FormRequest $defaultData
      *
      * @return mixed
-     * @throws ReflectionException
-     * @throws UnknownPropertyTypeException
      */
     private function mapData(array $data, string|array|FormRequest $defaultData): object
     {
@@ -93,8 +95,6 @@ class ObjectMapper
      * @param array $data
      *
      * @return mixed
-     * @throws UnknownPropertyTypeException
-     * @throws ReflectionException
      */
     public function mapFromArray(array $data): object
     {
@@ -106,8 +106,6 @@ class ObjectMapper
      * @param bool        $onlyValidated
      *
      * @return mixed
-     * @throws ReflectionException
-     * @throws UnknownPropertyTypeException
      */
     public function mapFromRequest(FormRequest $request, bool $onlyValidated = true): object
     {
