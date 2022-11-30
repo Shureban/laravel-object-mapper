@@ -23,7 +23,7 @@ class ObjectMapper
     /**
      * @param string|array|FormRequest $data
      *
-     * @return object
+     * @return mixed
      * @throws ReflectionException
      * @throws UnknownPropertyTypeException
      */
@@ -40,7 +40,7 @@ class ObjectMapper
     /**
      * @param string $data
      *
-     * @return object
+     * @return mixed
      * @throws ReflectionException
      * @throws UnknownPropertyTypeException
      */
@@ -53,7 +53,7 @@ class ObjectMapper
      * @param array                    $data
      * @param string|array|FormRequest $defaultData
      *
-     * @return object
+     * @return mixed
      * @throws ReflectionException
      * @throws UnknownPropertyTypeException
      */
@@ -92,7 +92,7 @@ class ObjectMapper
     /**
      * @param array $data
      *
-     * @return object
+     * @return mixed
      * @throws UnknownPropertyTypeException
      * @throws ReflectionException
      */
@@ -105,7 +105,7 @@ class ObjectMapper
      * @param FormRequest $request
      * @param bool        $onlyValidated
      *
-     * @return object
+     * @return mixed
      * @throws ReflectionException
      * @throws UnknownPropertyTypeException
      */
