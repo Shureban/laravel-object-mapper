@@ -5,7 +5,7 @@ namespace Shureban\LaravelObjectMapper\Types\Custom;
 use Illuminate\Database\Eloquent\Model;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\ObjectType;
 
-class ModelType extends ObjectType
+class EloquentType extends ObjectType
 {
     private string $modelNamespace;
 

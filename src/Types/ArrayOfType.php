@@ -32,8 +32,9 @@ class ArrayOfType extends Type
      */
     public function convert(mixed $value): array
     {
-        return array_map(fn(mixed $nestedValue) => $this->nestedLevel === 1
+        return collect($value)->map(fn(mixed $nestedValue) => $this->nestedLevel === 1
             ? $this->type->convert($nestedValue)
-            : (new static($this->type, $this->nestedLevel - 1))->convert($nestedValue), $value);
+            : (new static($this->type, $this->nestedLevel - 1))->convert($nestedValue)
+        )->toArray();
     }
 }
