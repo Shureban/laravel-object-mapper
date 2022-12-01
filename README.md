@@ -1,4 +1,4 @@
-# Laravel query searcher
+# Laravel object mapper
 
 ## Installation
 
