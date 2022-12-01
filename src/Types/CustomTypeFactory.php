@@ -24,7 +24,7 @@ class CustomTypeFactory
         }
 
         if (is_subclass_of($typeName, Model::class)) {
-            $modelType = config('object_mapper.types.other.model');
+            $modelType = config('object_mapper.types.other.eloquent');
 
             return !is_null($modelType) ? new $modelType($typeName) : null;
         }

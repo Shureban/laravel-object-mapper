@@ -92,7 +92,7 @@ Below you will see cases which you can use for mapping data into your object
 
 - `CustomClass`
 - `Enum`
-- `EloquentModel`
+- `Eloquent`
 
 ### Array of types
 

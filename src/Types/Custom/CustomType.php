@@ -28,7 +28,7 @@ class CustomType extends ObjectType
         $constructor      = $reflection->getConstructor();
         $emptyConstructor = !is_null($constructor) && $constructor->getNumberOfParameters() === 0;
 
-        if (is_null($constructor) || $emptyConstructor || is_array($value)) {
+        if (is_null($constructor) || $emptyConstructor || is_array($value) || is_object($value)) {
             return (new ObjectMapper(new $this->classNamespace()))->mapFromArray($value);
         }
 

@@ -92,12 +92,14 @@ class ObjectMapper
     }
 
     /**
-     * @param array $data
+     * @param array|object $data
      *
      * @return mixed
      */
-    public function mapFromArray(array $data): object
+    public function mapFromArray(array|object $data): object
     {
+        $data = (array)$data;
+
         return $this->mapData($data, $data);
     }
 
