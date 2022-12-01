@@ -6,7 +6,6 @@ class PhpDoc
 {
     private const PropertyNameRegex = '/var(.*)?\$(?<name>\w+)/';
     private const TypeNameRegex     = '/var (?<type>[\\a-zA-Z0-9]+)([\[\]]+)? \$?/U';
-    private const ArrayOfRegex      = '/var [\\a-zA-Z0-9]+([[]]+) \$?/';
 
     private string $phpDoc;
 
@@ -55,7 +54,7 @@ class PhpDoc
      */
     public function isArrayOf(): bool
     {
-        return (bool)preg_match(self::ArrayOfRegex, $this->phpDoc);
+        return $this->arrayNestedLevel() > 0;
     }
 
     /**

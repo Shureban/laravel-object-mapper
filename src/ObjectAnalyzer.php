@@ -3,9 +3,7 @@
 namespace Shureban\LaravelObjectMapper;
 
 use ReflectionClass;
-use ReflectionException;
 use ReflectionProperty;
-use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
 
 class ObjectAnalyzer
 {
@@ -18,8 +16,6 @@ class ObjectAnalyzer
 
     /**
      * @return array|Property[]
-     * @throws UnknownPropertyTypeException
-     * @throws ReflectionException
      */
     public function getProperties(): array
     {

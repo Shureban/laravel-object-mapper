@@ -4,7 +4,6 @@ namespace Shureban\LaravelObjectMapper\Types\BoxTypes;
 
 use Carbon\Carbon;
 use DateTimeZone;
-use Exception;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\ObjectType;
 
 class CarbonType extends ObjectType
@@ -13,7 +12,6 @@ class CarbonType extends ObjectType
      * @param mixed $value
      *
      * @return Carbon
-     * @throws Exception
      */
     public function convert(mixed $value): Carbon
     {

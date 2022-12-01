@@ -2,10 +2,9 @@
 
 namespace Shureban\LaravelObjectMapper\Exceptions;
 
-use Exception;
 use Throwable;
 
-class UnknownPropertyTypeException extends Exception
+class UnknownPropertyTypeException extends ObjectMapperException
 {
     /**
      * @param string         $property

@@ -6,23 +6,35 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class WithSetterClass
 {
-    public string $value;
-    public string $request_value;
+    /** @var string $from_json_value */
+    public string $fromJsonValue;
+    public string $fromArrayValue;
+    public string $from_request_value;
 
     /**
      * @param string $value
+     * @param string $json
      */
-    public function setValue(string $value): void
+    public function setFromJsonValue(string $value, string $json): void
     {
-        $this->value = sprintf('setter_%s', $value);
+        $this->fromJsonValue = sprintf('setter_%s', $value);
+    }
+
+    /**
+     * @param string $value
+     * @param array  $data
+     */
+    public function setFromArrayValue(string $value, array $data): void
+    {
+        $this->fromArrayValue = sprintf('setter_%s', $value);
     }
 
     /**
      * @param string      $value
      * @param FormRequest $request
      */
-    public function setRequestValue(string $value, FormRequest $request): void
+    public function setFromRequestValue(string $value, FormRequest $request): void
     {
-        $this->request_value = sprintf('setter_%s', $value);
+        $this->from_request_value = sprintf('setter_%s', $value);
     }
 }

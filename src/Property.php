@@ -2,7 +2,6 @@
 
 namespace Shureban\LaravelObjectMapper;
 
-use ReflectionException;
 use ReflectionProperty;
 use Shureban\LaravelObjectMapper\Types\Factory;
 use Shureban\LaravelObjectMapper\Types\Type;
@@ -15,8 +14,6 @@ class Property
 
     /**
      * @param ReflectionProperty $property
-     *
-     * @throws ReflectionException|Exceptions\UnknownPropertyTypeException
      */
     public function __construct(ReflectionProperty $property)
     {
@@ -57,6 +54,14 @@ class Property
     public function convert(mixed $value): mixed
     {
         return $this->type->convert($value);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isReadOnly(): bool
+    {
+        return $this->property->isReadOnly();
     }
 
     /**

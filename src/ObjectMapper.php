@@ -3,10 +3,9 @@
 namespace Shureban\LaravelObjectMapper;
 
 use Illuminate\Foundation\Http\FormRequest;
-use ReflectionException;
 use Shureban\LaravelObjectMapper\Attributes\SetterName;
+use Shureban\LaravelObjectMapper\Exceptions\ParseJsonException;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownDataFormatException;
-use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
 
 class ObjectMapper
 {
@@ -23,9 +22,8 @@ class ObjectMapper
     /**
      * @param string|array|FormRequest $data
      *
-     * @return object
-     * @throws ReflectionException
-     * @throws UnknownPropertyTypeException
+     * @return mixed
+     * @throws ParseJsonException
      */
     public function map(string|array|FormRequest $data): object
     {
@@ -38,24 +36,28 @@ class ObjectMapper
     }
 
     /**
-     * @param string $data
+     * @param string $json
      *
-     * @return object
-     * @throws ReflectionException
-     * @throws UnknownPropertyTypeException
+     * @return mixed
+     * @throws ParseJsonException
      */
-    public function mapFromJson(string $data): object
+    public function mapFromJson(string $json): object
     {
-        return $this->mapData(json_decode($data, true), $data);
+        $data  = json_decode($json, true);
+        $error = json_last_error_msg();
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new ParseJsonException($error);
+        }
+
+        return $this->mapData($data, $json);
     }
 
     /**
      * @param array                    $data
      * @param string|array|FormRequest $defaultData
      *
-     * @return object
-     * @throws ReflectionException
-     * @throws UnknownPropertyTypeException
+     * @return mixed
      */
     private function mapData(array $data, string|array|FormRequest $defaultData): object
     {
@@ -79,6 +81,10 @@ class ObjectMapper
                 continue;
             }
 
+            if ($property->isReadOnly()) {
+                continue;
+            }
+
             $this->result->{$objectPropertyName} = $property->convert($value);
         }
 
@@ -88,9 +94,7 @@ class ObjectMapper
     /**
      * @param array $data
      *
-     * @return object
-     * @throws UnknownPropertyTypeException
-     * @throws ReflectionException
+     * @return mixed
      */
     public function mapFromArray(array $data): object
     {
@@ -101,9 +105,7 @@ class ObjectMapper
      * @param FormRequest $request
      * @param bool        $onlyValidated
      *
-     * @return object
-     * @throws ReflectionException
-     * @throws UnknownPropertyTypeException
+     * @return mixed
      */
     public function mapFromRequest(FormRequest $request, bool $onlyValidated = true): object
     {
