@@ -1,8 +1,6 @@
 <?php
 
-namespace Shureban\LaravelObjectMapper\Types\Custom;
-
-use Shureban\LaravelObjectMapper\Types\Type;
+namespace Shureban\LaravelObjectMapper\Types;
 
 class ArrayOfType extends Type
 {

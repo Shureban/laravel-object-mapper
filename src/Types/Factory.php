@@ -6,7 +6,6 @@ use ReflectionProperty;
 use Shureban\LaravelObjectMapper\ClassExtraInformation;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
 use Shureban\LaravelObjectMapper\PhpDoc;
-use Shureban\LaravelObjectMapper\Types\Custom\ArrayOfType;
 
 class Factory
 {

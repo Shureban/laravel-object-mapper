@@ -2,10 +2,9 @@
 
 namespace Shureban\LaravelObjectMapper\Exceptions;
 
-use Exception;
 use Throwable;
 
-class UnknownDataFormatException extends Exception
+class UnknownDataFormatException extends ObjectMapperException
 {
     public function __construct(int $code = 0, ?Throwable $previous = null)
     {

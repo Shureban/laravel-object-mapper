@@ -2,10 +2,9 @@
 
 namespace Shureban\LaravelObjectMapper\Exceptions;
 
-use Exception;
 use Throwable;
 
-class WrongConstructorParametersNumberException extends Exception
+class WrongConstructorParametersNumberException extends ObjectMapperException
 {
     /**
      * @param string         $class

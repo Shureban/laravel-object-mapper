@@ -2,10 +2,9 @@
 
 namespace Shureban\LaravelObjectMapper\Exceptions;
 
-use Exception;
 use Throwable;
 
-class ParseJsonException extends Exception
+class ParseJsonException extends ObjectMapperException
 {
     /**
      * @param string         $message
