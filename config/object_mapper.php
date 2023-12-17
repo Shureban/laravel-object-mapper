@@ -18,6 +18,8 @@ use Shureban\LaravelObjectMapper\Types\SimpleTypes\ObjectType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\StringType;
 
 return [
+    'snake_case_to_camel' => true,
+
     'types' => [
         'simple' => [
             'string'  => StringType::class,

@@ -7,11 +7,11 @@ use ReflectionProperty;
 
 class ObjectAnalyzer
 {
-    private object $result;
+    private object $object;
 
-    public function __construct(object $result)
+    public function __construct(object $object)
     {
-        $this->result = $result;
+        $this->object = $object;
     }
 
     /**
@@ -19,7 +19,7 @@ class ObjectAnalyzer
      */
     public function getProperties(): array
     {
-        $reflect      = new ReflectionClass($this->result);
+        $reflect      = new ReflectionClass($this->object);
         $reflectProps = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
 
         return array_map(fn(ReflectionProperty $property) => new Property($property), $reflectProps);
@@ -32,6 +32,6 @@ class ObjectAnalyzer
      */
     public function hasSetter(string $setterName): bool
     {
-        return (new ReflectionClass($this->result))->hasMethod($setterName);
+        return (new ReflectionClass($this->object))->hasMethod($setterName);
     }
 }

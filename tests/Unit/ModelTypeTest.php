@@ -1,6 +1,6 @@
 <?php
 
-namespace Shureban\LaravelObjectMapper\Tests\Structs;
+namespace Shureban\LaravelObjectMapper\Tests\Unit;
 
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\ModelTypeClass;
