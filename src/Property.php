@@ -3,8 +3,10 @@
 namespace Shureban\LaravelObjectMapper;
 
 use ReflectionProperty;
+use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
 use Shureban\LaravelObjectMapper\Types\Factory;
 use Shureban\LaravelObjectMapper\Types\Type;
+use Str;
 
 class Property
 {
@@ -14,6 +16,8 @@ class Property
 
     /**
      * @param ReflectionProperty $property
+     *
+     * @throws UnknownPropertyTypeException
      */
     public function __construct(ReflectionProperty $property)
     {
@@ -33,9 +37,17 @@ class Property
     /**
      * @return string
      */
-    public function getDataPropertyName(): string
+    public function getOriginalName(): string
     {
-        return $this->phpDoc->getPropertyName() ?: $this->property->getName();
+        return $this->phpDoc->getPropertyName() ?: $this->getObjectPropertyName();
+    }
+
+    /**
+     * @return string
+     */
+    public function getSnakeCaseName(): string
+    {
+        return Str::snake($this->getOriginalName());
     }
 
     /**

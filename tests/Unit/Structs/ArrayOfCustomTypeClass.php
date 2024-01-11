@@ -11,8 +11,3 @@ class ArrayOfCustomTypeClass
     /** @var CustomTypeForArrayOf[][][] $arrayOfArrayOfArrayOfCustomType */
     public $arrayOfArrayOfArrayOfCustomType = [];
 }
-
-class CustomTypeForArrayOf
-{
-    public string $key;
-}

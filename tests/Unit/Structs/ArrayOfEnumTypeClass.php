@@ -12,7 +12,3 @@ class ArrayOfEnumTypeClass
     public $arrayOfArrayOfArrayOfEnumType = [];
 }
 
-enum EnumTypeForArrayOf: string
-{
-    case Hearts = 'Hearts';
-}
