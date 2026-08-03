@@ -20,6 +20,18 @@ trait MappableTrait
     }
 
     /**
+     * Maps a JSON list (or a PHP list of arrays) into an array of static instances.
+     *
+     * @param string|array $data
+     *
+     * @return array|static[]
+     */
+    public static function fromMany(string|array $data): array
+    {
+        return ObjectMapper::mapArrayOf(static::class, $data);
+    }
+
+    /**
      * @param string|array|FormRequest $data
      *
      * @return $this

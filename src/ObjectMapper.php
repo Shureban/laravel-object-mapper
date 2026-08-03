@@ -5,6 +5,7 @@ namespace Shureban\LaravelObjectMapper;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
 use Shureban\LaravelObjectMapper\Exceptions\InvalidJsonStructureException;
+use Shureban\LaravelObjectMapper\Exceptions\InvalidValueTypeException;
 use Shureban\LaravelObjectMapper\Exceptions\MappingFailedException;
 use Shureban\LaravelObjectMapper\Exceptions\MissingRequiredValueException;
 use Shureban\LaravelObjectMapper\Exceptions\ObjectMapperException;
@@ -42,6 +43,48 @@ class ObjectMapper
         $this->strict = $strict;
 
         return $this;
+    }
+
+    /**
+     * Maps a JSON list (or a PHP list of arrays) into an array of $class instances.
+     *
+     * @template T of object
+     *
+     * @param class-string<T> $class
+     * @param string|array    $data
+     *
+     * @return array|T[]
+     * @throws ParseJsonException
+     * @throws InvalidJsonStructureException
+     * @throws InvalidValueTypeException
+     */
+    public static function mapArrayOf(string $class, string|array $data): array
+    {
+        if (is_string($data)) {
+            $decoded = json_decode($data, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new ParseJsonException(json_last_error_msg());
+            }
+
+            if (!is_array($decoded)) {
+                throw new InvalidJsonStructureException(get_debug_type($decoded));
+            }
+
+            $data = $decoded;
+        }
+
+        if (!array_is_list($data)) {
+            throw new InvalidJsonStructureException('map of keys');
+        }
+
+        return array_map(function (mixed $item) use ($class) {
+            if (!is_array($item) && !is_object($item)) {
+                throw new InvalidValueTypeException($class, $item);
+            }
+
+            return (new self($class))->mapFromArray($item);
+        }, $data);
     }
 
     /**
