@@ -4,6 +4,8 @@ namespace Shureban\LaravelObjectMapper;
 
 use Illuminate\Support\Str;
 use ReflectionProperty;
+use Shureban\LaravelObjectMapper\Attributes\Ignore;
+use Shureban\LaravelObjectMapper\Attributes\MapFrom;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
 use Shureban\LaravelObjectMapper\Types\Factory;
 use Shureban\LaravelObjectMapper\Types\Type;
@@ -36,7 +38,33 @@ class Property
      */
     public function getOriginalName(): string
     {
+        $mapFrom = $this->getAttribute(MapFrom::class);
+
+        if ($mapFrom instanceof MapFrom) {
+            return $mapFrom->key;
+        }
+
         return $this->phpDoc->getPropertyName() ?: $this->getObjectPropertyName();
+    }
+
+    /**
+     * @param class-string $attributeClass
+     *
+     * @return object|null
+     */
+    public function getAttribute(string $attributeClass): ?object
+    {
+        $attributes = $this->property->getAttributes($attributeClass);
+
+        return $attributes === [] ? null : $attributes[0]->newInstance();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isIgnored(): bool
+    {
+        return $this->getAttribute(Ignore::class) !== null;
     }
 
     /**

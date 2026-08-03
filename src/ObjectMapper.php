@@ -3,6 +3,7 @@
 namespace Shureban\LaravelObjectMapper;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Arr;
 use Shureban\LaravelObjectMapper\Support\SetterName;
 use Shureban\LaravelObjectMapper\Exceptions\InvalidJsonStructureException;
 use Shureban\LaravelObjectMapper\Exceptions\ParseJsonException;
@@ -137,13 +138,17 @@ class ObjectMapper
      */
     private function getPropertyValue(Property $property, array $data): mixed
     {
-        if ($property->isReadOnly()) {
+        if ($property->isReadOnly() || $property->isIgnored()) {
             return null;
         }
 
         $originalName     = $property->getOriginalName();
         $snakeCaseName    = $property->getSnakeCaseName();
         $otherCaseAllowed = config('object_mapper.snake_case_to_camel');
+
+        if (str_contains($originalName, '.')) {
+            return Arr::get($data, $originalName);
+        }
 
         return match (true) {
             isset($data[$originalName])                       => $data[$originalName],
