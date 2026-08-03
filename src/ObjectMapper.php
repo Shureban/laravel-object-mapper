@@ -3,7 +3,7 @@
 namespace Shureban\LaravelObjectMapper;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Shureban\LaravelObjectMapper\Attributes\SetterName;
+use Shureban\LaravelObjectMapper\Support\SetterName;
 use Shureban\LaravelObjectMapper\Exceptions\InvalidJsonStructureException;
 use Shureban\LaravelObjectMapper\Exceptions\ParseJsonException;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownDataFormatException;

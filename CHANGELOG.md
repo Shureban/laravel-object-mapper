@@ -1,6 +1,12 @@
 # Changelog
 
-## v1.3.0
+## v2.0.0
+
+### Breaking
+
+- `Shureban\LaravelObjectMapper\Attributes\SetterName` (internal helper) moved to
+  `Shureban\LaravelObjectMapper\Support\SetterName` — the `Attributes` namespace now holds
+  real PHP attributes only.
 
 Focus: predictable error handling. Every malformed input now throws a subclass of
 `Shureban\LaravelObjectMapper\Exceptions\ObjectMapperException` instead of a raw PHP

@@ -1,6 +1,6 @@
 <?php
 
-namespace Shureban\LaravelObjectMapper\Attributes;
+namespace Shureban\LaravelObjectMapper\Support;
 
 use Illuminate\Support\Str;
 use Stringable;
