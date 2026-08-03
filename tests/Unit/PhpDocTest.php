@@ -3,7 +3,7 @@
 namespace Shureban\LaravelObjectMapper\Tests\Unit;
 
 use Shureban\LaravelObjectMapper\PhpDoc;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class PhpDocTest extends TestCase
 {
@@ -30,7 +30,7 @@ DOC
         $this->assertEquals('string', (new PhpDoc('/** @var string $variable */'))->getPropertyType());
         $this->assertEquals('SomeClass', (new PhpDoc('/** @var SomeClass $variable */'))->getPropertyType());
         $this->assertEquals('Path\To\Some\Class', (new PhpDoc('/** @var Path\To\Some\Class $variable */'))->getPropertyType());
-        $this->assertEquals('\Path\To\Some\Class', (new PhpDoc('/** @var \Path\To\Some\Class $variable */'))->getPropertyType());
+        $this->assertEquals('Path\To\Some\Class', (new PhpDoc('/** @var \Path\To\Some\Class $variable */'))->getPropertyType());
         $this->assertEquals('string', (new PhpDoc(<<<DOC
 /**
 * @var string \$variable

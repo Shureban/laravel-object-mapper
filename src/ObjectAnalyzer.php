@@ -21,8 +21,9 @@ class ObjectAnalyzer
     {
         $reflect      = new ReflectionClass($this->object);
         $reflectProps = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
+        $reflectProps = array_filter($reflectProps, fn(ReflectionProperty $property) => !$property->isStatic());
 
-        return array_map(fn(ReflectionProperty $property) => new Property($property), $reflectProps);
+        return array_map(fn(ReflectionProperty $property) => new Property($property), array_values($reflectProps));
     }
 
     /**
@@ -32,6 +33,14 @@ class ObjectAnalyzer
      */
     public function hasSetter(string $setterName): bool
     {
-        return (new ReflectionClass($this->object))->hasMethod($setterName);
+        $reflection = new ReflectionClass($this->object);
+
+        if (!$reflection->hasMethod($setterName)) {
+            return false;
+        }
+
+        $method = $reflection->getMethod($setterName);
+
+        return $method->isPublic() && !$method->isStatic();
     }
 }

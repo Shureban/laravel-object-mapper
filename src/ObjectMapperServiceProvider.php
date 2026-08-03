@@ -13,6 +13,7 @@ class ObjectMapperServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->mergeConfigFrom(__DIR__ . '/../config/object_mapper.php', 'object_mapper');
     }
 
     /**
@@ -22,6 +23,8 @@ class ObjectMapperServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->publishes([__DIR__ . '/../config' => base_path('config')]);
+        $this->publishes([
+            __DIR__ . '/../config/object_mapper.php' => config_path('object_mapper.php'),
+        ], 'object-mapper-config');
     }
 }

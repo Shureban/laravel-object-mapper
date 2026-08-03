@@ -10,7 +10,7 @@ use Shureban\LaravelObjectMapper\Tests\Unit\Structs\ArrayOfEnumTypeClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\ArrayOfSimpleTypeClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypeForArrayOf;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\EnumTypeForArrayOf;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class ArrayOfTypeTest extends TestCase
 {

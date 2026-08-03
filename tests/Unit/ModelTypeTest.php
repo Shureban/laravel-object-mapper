@@ -5,7 +5,7 @@ namespace Shureban\LaravelObjectMapper\Tests\Unit;
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\ModelTypeClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\SomeModel;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class ModelTypeTest extends TestCase
 {

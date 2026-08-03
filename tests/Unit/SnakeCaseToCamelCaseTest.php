@@ -5,7 +5,7 @@ namespace Shureban\LaravelObjectMapper\Tests\Unit;
 use Illuminate\Foundation\Http\FormRequest;
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\ClassWithCamelCaseValues;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class SnakeCaseToCamelCaseTest extends TestCase
 {

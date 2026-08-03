@@ -7,7 +7,7 @@ use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomCorrectOneEmptyTypePar
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomCorrectOneIntTypeParameterConstructorTypeClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomCorrectOneMixedTypeParameterConstructorTypeClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypeWithConstructorClass;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class CustomTypeWithConstructorTest extends TestCase
 {

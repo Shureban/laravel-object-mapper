@@ -2,6 +2,7 @@
 
 namespace Shureban\LaravelObjectMapper\Types;
 
+use ReflectionNamedType;
 use ReflectionProperty;
 use Shureban\LaravelObjectMapper\ClassExtraInformation;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
@@ -13,6 +14,7 @@ class Factory
      * @param ReflectionProperty $property
      *
      * @return Type
+     * @throws UnknownPropertyTypeException
      */
     public static function make(ReflectionProperty $property): Type
     {
@@ -20,6 +22,10 @@ class Factory
 
         if (!$property->hasType() && !$phpDoc->hasType()) {
             return SimpleTypeFactory::make('mixed');
+        }
+
+        if (!$phpDoc->hasType() && !($property->getType() instanceof ReflectionNamedType)) {
+            throw new UnknownPropertyTypeException($property->getName());
         }
 
         $type       = $phpDoc->hasType() ? $phpDoc->getPropertyType() : $property->getType()->getName();
@@ -43,7 +49,7 @@ class Factory
 
         $extraInformation = new ClassExtraInformation($property->getDeclaringClass());
         $namespace        = $extraInformation->getFullObjectUseNamespace($type);
-        $customType       = CustomTypeFactory::make($namespace);
+        $customType       = is_null($namespace) ? null : CustomTypeFactory::make($namespace);
 
         if ($customType !== null) {
             return $phpDoc->isArrayOf() ? new ArrayOfType($customType, $phpDoc->arrayNestedLevel()) : $customType;

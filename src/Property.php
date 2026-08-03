@@ -2,28 +2,25 @@
 
 namespace Shureban\LaravelObjectMapper;
 
+use Illuminate\Support\Str;
 use ReflectionProperty;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
 use Shureban\LaravelObjectMapper\Types\Factory;
 use Shureban\LaravelObjectMapper\Types\Type;
-use Str;
 
 class Property
 {
-    private Type               $type;
+    private ?Type              $type = null;
     private PhpDoc             $phpDoc;
     private ReflectionProperty $property;
 
     /**
      * @param ReflectionProperty $property
-     *
-     * @throws UnknownPropertyTypeException
      */
     public function __construct(ReflectionProperty $property)
     {
         $this->property = $property;
-        $this->phpDoc   = new PhpDoc($property->getDocComment());
-        $this->type     = Factory::make($property);
+        $this->phpDoc   = new PhpDoc((string)$property->getDocComment());
     }
 
     /**
@@ -52,20 +49,22 @@ class Property
 
     /**
      * @return mixed
+     * @throws UnknownPropertyTypeException
      */
     public function getDefaultValue(): mixed
     {
-        return $this->property->getDefaultValue() ?: $this->type->getDefaultValue();
+        return $this->property->getDefaultValue() ?? $this->getType()->getDefaultValue();
     }
 
     /**
      * @param mixed $value
      *
      * @return mixed
+     * @throws UnknownPropertyTypeException
      */
     public function convert(mixed $value): mixed
     {
-        return $this->type->convert($value);
+        return $this->getType()->convert($value);
     }
 
     /**
@@ -77,10 +76,14 @@ class Property
     }
 
     /**
+     * The type is resolved lazily: an unsupported property type (union, unknown class)
+     * breaks the mapping only when a value for that property actually arrives.
+     *
      * @return Type
+     * @throws UnknownPropertyTypeException
      */
     public function getType(): Type
     {
-        return $this->type;
+        return $this->type ??= Factory::make($this->property);
     }
 }

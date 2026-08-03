@@ -13,10 +13,19 @@ class BoolType extends Type
      */
     public function convert(mixed $value): bool
     {
-        return match ($value) {
-            true, 'true', '1', 1 => true,
-            default              => false
-        };
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+        }
+
+        if (is_int($value) || is_float($value)) {
+            return $value == 1;
+        }
+
+        return false;
     }
 
     /**

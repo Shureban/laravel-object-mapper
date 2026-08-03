@@ -4,6 +4,7 @@ namespace Shureban\LaravelObjectMapper;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Shureban\LaravelObjectMapper\Attributes\SetterName;
+use Shureban\LaravelObjectMapper\Exceptions\InvalidJsonStructureException;
 use Shureban\LaravelObjectMapper\Exceptions\ParseJsonException;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownDataFormatException;
 
@@ -22,16 +23,18 @@ class ObjectMapper
     /**
      * @param string|array|FormRequest $data
      *
-     * @return mixed
+     * @return object
      * @throws ParseJsonException
+     * @throws InvalidJsonStructureException
+     * @throws UnknownDataFormatException
      */
     public function map(string|array|FormRequest $data): object
     {
-        return match (gettype($data)) {
-            'string' => $this->mapFromJson($data),
-            'array'  => $this->mapFromArray($data),
-            'object' => $this->mapFromRequest($data),
-            default  => new UnknownDataFormatException()
+        return match (true) {
+            is_string($data)             => $this->mapFromJson($data),
+            is_array($data)              => $this->mapFromArray($data),
+            $data instanceof FormRequest => $this->mapFromRequest($data),
+            default                      => throw new UnknownDataFormatException()
         };
     }
 
@@ -63,8 +66,9 @@ class ObjectMapper
     /**
      * @param string $json
      *
-     * @return mixed
+     * @return object
      * @throws ParseJsonException
+     * @throws InvalidJsonStructureException
      */
     public function mapFromJson(string $json): object
     {
@@ -73,6 +77,10 @@ class ObjectMapper
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new ParseJsonException($error);
+        }
+
+        if (!is_array($data)) {
+            throw new InvalidJsonStructureException(get_debug_type($data));
         }
 
         return $this->mapData($data, $json);
@@ -107,8 +115,13 @@ class ObjectMapper
                 continue;
             }
 
+            $convertedValue = $property->convert($value);
 
-            $this->result->{$objectPropertyName} = $property->convert($value);
+            if ($convertedValue === null) {
+                continue;
+            }
+
+            $this->result->{$objectPropertyName} = $convertedValue;
         }
 
         return $this->result;

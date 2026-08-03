@@ -2,7 +2,7 @@
 
 namespace Shureban\LaravelObjectMapper\Attributes;
 
-use Str;
+use Illuminate\Support\Str;
 use Stringable;
 
 class SetterName implements Stringable

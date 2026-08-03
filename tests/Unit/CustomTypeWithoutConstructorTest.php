@@ -13,7 +13,7 @@ use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypeStrictBoxClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypeStrictClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypeStrictCustomClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypeStrictSimpleClass;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class CustomTypeWithoutConstructorTest extends TestCase
 {
