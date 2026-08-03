@@ -10,11 +10,17 @@ use UnitEnum;
 
 class EnumType extends ObjectType
 {
-    private string $enumNamespace;
+    private string    $enumNamespace;
+    private ?UnitEnum $fallback;
 
-    public function __construct(string $enumNamespace)
+    /**
+     * @param string        $enumNamespace
+     * @param UnitEnum|null $fallback Case returned when the value cannot be converted.
+     */
+    public function __construct(string $enumNamespace, ?UnitEnum $fallback = null)
     {
         $this->enumNamespace = $enumNamespace;
+        $this->fallback      = $fallback;
     }
 
     /**
@@ -30,13 +36,13 @@ class EnumType extends ObjectType
         }
 
         if (!is_subclass_of($this->enumNamespace, BackedEnum::class)) {
-            throw new InvalidEnumValueException($this->enumNamespace, $value);
+            return $this->fallback ?? throw new InvalidEnumValueException($this->enumNamespace, $value);
         }
 
         try {
             return call_user_func([$this->enumNamespace, 'from'], $value);
         } catch (Throwable $exception) {
-            throw new InvalidEnumValueException($this->enumNamespace, $value, 0, $exception);
+            return $this->fallback ?? throw new InvalidEnumValueException($this->enumNamespace, $value, 0, $exception);
         }
     }
 }

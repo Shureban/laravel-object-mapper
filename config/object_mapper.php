@@ -20,6 +20,10 @@ use Shureban\LaravelObjectMapper\Types\SimpleTypes\StringType;
 return [
     'snake_case_to_camel' => true,
 
+    // Set to true to restore the v1 behavior: Eloquent-typed properties are looked up
+    // via Model::find() without requiring the #[FindModel] attribute.
+    'implicit_model_lookup' => false,
+
     'types' => [
         'simple' => [
             'string'  => StringType::class,

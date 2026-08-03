@@ -3,20 +3,32 @@
 namespace Shureban\LaravelObjectMapper\Types;
 
 use Illuminate\Database\Eloquent\Model;
+use ReflectionProperty;
+use Shureban\LaravelObjectMapper\Attributes\EnumFallback;
+use Shureban\LaravelObjectMapper\Attributes\FindModel;
+use Shureban\LaravelObjectMapper\Exceptions\ImplicitModelLookupException;
 
 class CustomTypeFactory
 {
     /**
-     * @param string $typeName
+     * @param string                  $typeName
+     * @param ReflectionProperty|null $property Source property — used to read EnumFallback/FindModel attributes.
      *
      * @return Type|null
+     * @throws ImplicitModelLookupException
      */
-    public static function make(string $typeName): ?Type
+    public static function make(string $typeName, ?ReflectionProperty $property = null): ?Type
     {
         if (enum_exists($typeName)) {
             $enumType = config('object_mapper.types.other.enum');
+            $fallback = null;
 
-            return !is_null($enumType) ? new $enumType($typeName) : null;
+            if ($property !== null) {
+                $attributes = $property->getAttributes(EnumFallback::class);
+                $fallback   = $attributes === [] ? null : $attributes[0]->newInstance()->case;
+            }
+
+            return !is_null($enumType) ? new $enumType($typeName, $fallback) : null;
         }
 
         if (!class_exists($typeName)) {
@@ -24,6 +36,12 @@ class CustomTypeFactory
         }
 
         if (is_subclass_of($typeName, Model::class)) {
+            $optedIn = $property !== null && $property->getAttributes(FindModel::class) !== [];
+
+            if (!$optedIn && config('object_mapper.implicit_model_lookup') !== true) {
+                throw new ImplicitModelLookupException($typeName);
+            }
+
             $modelType = config('object_mapper.types.other.eloquent');
 
             return !is_null($modelType) ? new $modelType($typeName) : null;

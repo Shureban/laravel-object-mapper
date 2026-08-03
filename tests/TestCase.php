@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Config\Repository;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use Shureban\LaravelObjectMapper\Support\ClassMetadata;
 use Throwable;
 
 /**
@@ -25,6 +26,7 @@ abstract class TestCase extends BaseTestCase
         ]));
 
         Container::setInstance($container);
+        ClassMetadata::flush();
     }
 
     protected function tearDown(): void

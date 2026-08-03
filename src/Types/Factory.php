@@ -106,7 +106,7 @@ class Factory
      */
     private static function resolveByName(string $type, ReflectionProperty $property): ?Type
     {
-        $resolved = SimpleTypeFactory::make($type) ?? BoxTypeFactory::make($type) ?? CustomTypeFactory::make($type);
+        $resolved = SimpleTypeFactory::make($type) ?? BoxTypeFactory::make($type) ?? CustomTypeFactory::make($type, $property);
 
         if ($resolved !== null) {
             return $resolved;
@@ -115,6 +115,6 @@ class Factory
         $extraInformation = new ClassExtraInformation($property->getDeclaringClass());
         $namespace        = $extraInformation->getFullObjectUseNamespace($type);
 
-        return is_null($namespace) ? null : CustomTypeFactory::make($namespace);
+        return is_null($namespace) ? null : CustomTypeFactory::make($namespace, $property);
     }
 }

@@ -105,12 +105,16 @@ class ErrorHandlingTest extends TestCase
 
     public function test_invalidModelKeyThrowsInvalidModelKey()
     {
+        config()->set('object_mapper.implicit_model_lookup', true);
+
         $this->assertThrows(fn() => (new ObjectMapper(new ModelTypeClass()))->mapFromArray(['model_id' => [1, 2]]), InvalidModelKeyException::class);
         $this->assertThrows(fn() => (new ObjectMapper(new ModelTypeClass()))->mapFromArray(['model_id' => true]), InvalidModelKeyException::class);
     }
 
     public function test_modelInstancePassesThrough()
     {
+        config()->set('object_mapper.implicit_model_lookup', true);
+
         $model  = new SomeModel(5);
         $result = (new ObjectMapper(new ModelTypeClass()))->mapFromArray(['model_id' => $model]);
 
@@ -119,6 +123,8 @@ class ErrorHandlingTest extends TestCase
 
     public function test_notFoundModelLeavesPropertyUntouched()
     {
+        config()->set('object_mapper.implicit_model_lookup', true);
+
         $result = (new ObjectMapper(new NullFindModelClass()))->mapFromArray(['model' => 99]);
 
         $this->assertFalse(isset($result->model));

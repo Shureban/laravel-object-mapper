@@ -11,6 +11,8 @@ class ModelTypeTest extends TestCase
 {
     public function test_Model()
     {
+        config()->set('object_mapper.implicit_model_lookup', true);
+
         $model              = new ModelTypeClass();
         $model->phpDocModel = new SomeModel(10);
         $model->setterModel = new SomeModel(20);
