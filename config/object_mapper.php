@@ -24,6 +24,10 @@ return [
     // via Model::find() without requiring the #[FindModel] attribute.
     'implicit_model_lookup' => false,
 
+    // When true, an explicit null in the data is assigned to nullable properties
+    // (by default null values are skipped and the property keeps its default).
+    'assign_explicit_null' => false,
+
     'types' => [
         'simple' => [
             'string'  => StringType::class,

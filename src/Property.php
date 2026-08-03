@@ -104,6 +104,26 @@ class Property
     }
 
     /**
+     * @param object $object
+     *
+     * @return bool
+     */
+    public function isInitialized(object $object): bool
+    {
+        return $this->property->isInitialized($object);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNullable(): bool
+    {
+        $reflectionType = $this->property->getType();
+
+        return $reflectionType === null || $reflectionType->allowsNull();
+    }
+
+    /**
      * The type is resolved lazily: an unsupported property type (union, unknown class)
      * breaks the mapping only when a value for that property actually arrives.
      *

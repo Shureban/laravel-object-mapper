@@ -73,6 +73,45 @@ class ConstructorMapper
     }
 
     /**
+     * Top-level data keys consumed by the constructor parameters — used by strict mode
+     * to tell real unknown keys from constructor input.
+     *
+     * @param array $data
+     *
+     * @return array|string[]
+     */
+    public function consumedKeys(array $data): array
+    {
+        $reflection  = ClassMetadata::for($this->className)->getReflection();
+        $constructor = $reflection->getConstructor();
+
+        if (is_null($constructor)) {
+            return [];
+        }
+
+        $consumed = [];
+
+        foreach ($constructor->getParameters() as $parameter) {
+            $attributes   = $parameter->getAttributes(MapFrom::class);
+            $originalName = $attributes === [] ? $parameter->getName() : $attributes[0]->newInstance()->key;
+            $topLevelName = str_contains($originalName, '.') ? explode('.', $originalName)[0] : $originalName;
+
+            if (array_key_exists($topLevelName, $data)) {
+                $consumed[] = $topLevelName;
+                continue;
+            }
+
+            $snakeCaseName = Str::snake($topLevelName);
+
+            if (config('object_mapper.snake_case_to_camel') && array_key_exists($snakeCaseName, $data)) {
+                $consumed[] = $snakeCaseName;
+            }
+        }
+
+        return $consumed;
+    }
+
+    /**
      * @param ReflectionParameter $parameter
      * @param array               $data
      *
