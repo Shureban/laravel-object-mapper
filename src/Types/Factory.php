@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Carbon as SupportCarbon;
 use ReflectionNamedType;
+use ReflectionParameter;
 use ReflectionProperty;
 use Shureban\LaravelObjectMapper\Attributes\ArrayOf;
 use Shureban\LaravelObjectMapper\Attributes\CastWith;
@@ -54,14 +55,47 @@ class Factory
     }
 
     /**
-     * @param ReflectionProperty $property
+     * Same resolution rules for a constructor parameter: CastWith > ArrayOf > DateFormat > native type.
+     *
+     * @param ReflectionParameter $parameter
+     *
+     * @return Type
+     * @throws UnknownPropertyTypeException
+     */
+    public static function makeForParameter(ReflectionParameter $parameter): Type
+    {
+        $attributeType = self::makeFromAttributes($parameter);
+
+        if ($attributeType !== null) {
+            return $attributeType;
+        }
+
+        if (!$parameter->hasType()) {
+            return SimpleTypeFactory::make('mixed');
+        }
+
+        if (!($parameter->getType() instanceof ReflectionNamedType)) {
+            throw new UnknownPropertyTypeException($parameter->getName());
+        }
+
+        $resolved = self::resolveByName($parameter->getType()->getName(), $parameter);
+
+        if ($resolved === null) {
+            throw new UnknownPropertyTypeException($parameter->getName());
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * @param ReflectionProperty|ReflectionParameter $holder
      *
      * @return Type|null
      * @throws UnknownPropertyTypeException
      */
-    private static function makeFromAttributes(ReflectionProperty $property): ?Type
+    private static function makeFromAttributes(ReflectionProperty|ReflectionParameter $holder): ?Type
     {
-        $castWith = $property->getAttributes(CastWith::class);
+        $castWith = $holder->getAttributes(CastWith::class);
 
         if ($castWith !== []) {
             $typeClass = $castWith[0]->newInstance()->typeClass;
@@ -69,21 +103,21 @@ class Factory
             return new $typeClass();
         }
 
-        $arrayOf = $property->getAttributes(ArrayOf::class);
+        $arrayOf = $holder->getAttributes(ArrayOf::class);
 
         if ($arrayOf !== []) {
             $instance = $arrayOf[0]->newInstance();
-            $itemType = self::resolveByName($instance->type, $property);
+            $itemType = self::resolveByName($instance->type, $holder);
 
             if ($itemType === null) {
-                throw new UnknownPropertyTypeException($property->getName());
+                throw new UnknownPropertyTypeException($holder->getName());
             }
 
             return new ArrayOfType($itemType, $instance->depth);
         }
 
-        $dateFormat     = $property->getAttributes(DateFormat::class);
-        $reflectionType = $property->getType();
+        $dateFormat     = $holder->getAttributes(DateFormat::class);
+        $reflectionType = $holder->getType();
 
         if ($dateFormat !== [] && $reflectionType instanceof ReflectionNamedType) {
             $dateClasses = [DateTime::class, Carbon::class, SupportCarbon::class];
@@ -99,22 +133,28 @@ class Factory
     /**
      * Shared resolution chain for a type name: simple -> box -> custom -> use-statement lookup.
      *
-     * @param string             $type
-     * @param ReflectionProperty $property
+     * @param string                                  $type
+     * @param ReflectionProperty|ReflectionParameter $holder
      *
      * @return Type|null
      */
-    private static function resolveByName(string $type, ReflectionProperty $property): ?Type
+    private static function resolveByName(string $type, ReflectionProperty|ReflectionParameter $holder): ?Type
     {
-        $resolved = SimpleTypeFactory::make($type) ?? BoxTypeFactory::make($type) ?? CustomTypeFactory::make($type, $property);
+        $resolved = SimpleTypeFactory::make($type) ?? BoxTypeFactory::make($type) ?? CustomTypeFactory::make($type, $holder);
 
         if ($resolved !== null) {
             return $resolved;
         }
 
-        $extraInformation = new ClassExtraInformation($property->getDeclaringClass());
+        $declaringClass = $holder->getDeclaringClass();
+
+        if ($declaringClass === null) {
+            return null;
+        }
+
+        $extraInformation = new ClassExtraInformation($declaringClass);
         $namespace        = $extraInformation->getFullObjectUseNamespace($type);
 
-        return is_null($namespace) ? null : CustomTypeFactory::make($namespace, $property);
+        return is_null($namespace) ? null : CustomTypeFactory::make($namespace, $holder);
     }
 }

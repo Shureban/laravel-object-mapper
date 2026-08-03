@@ -3,6 +3,7 @@
 namespace Shureban\LaravelObjectMapper\Types;
 
 use Illuminate\Database\Eloquent\Model;
+use ReflectionParameter;
 use ReflectionProperty;
 use Shureban\LaravelObjectMapper\Attributes\EnumFallback;
 use Shureban\LaravelObjectMapper\Attributes\FindModel;
@@ -11,13 +12,13 @@ use Shureban\LaravelObjectMapper\Exceptions\ImplicitModelLookupException;
 class CustomTypeFactory
 {
     /**
-     * @param string                  $typeName
-     * @param ReflectionProperty|null $property Source property — used to read EnumFallback/FindModel attributes.
+     * @param string                                       $typeName
+     * @param ReflectionProperty|ReflectionParameter|null $property Source member — used to read EnumFallback/FindModel attributes.
      *
      * @return Type|null
      * @throws ImplicitModelLookupException
      */
-    public static function make(string $typeName, ?ReflectionProperty $property = null): ?Type
+    public static function make(string $typeName, ReflectionProperty|ReflectionParameter|null $property = null): ?Type
     {
         if (enum_exists($typeName)) {
             $enumType = config('object_mapper.types.other.enum');

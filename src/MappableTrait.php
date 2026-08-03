@@ -7,6 +7,19 @@ use Illuminate\Foundation\Http\FormRequest;
 trait MappableTrait
 {
     /**
+     * Builds a new instance, resolving constructor parameters from the data
+     * (works for readonly DTOs with promoted properties).
+     *
+     * @param string|array|FormRequest $data
+     *
+     * @return static
+     */
+    public static function from(string|array|FormRequest $data): static
+    {
+        return (new ObjectMapper(static::class))->map($data);
+    }
+
+    /**
      * @param string|array|FormRequest $data
      *
      * @return $this

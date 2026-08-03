@@ -11,12 +11,13 @@ use Shureban\LaravelObjectMapper\Exceptions\UnknownDataFormatException;
 
 class ObjectMapper
 {
-    private object $result;
+    private object|string $result;
 
     /**
-     * @param object $result
+     * @param object|class-string $result A target instance, or a class name — the instance is then
+     *                                    built via constructor mapping (readonly DTO support).
      */
-    public function __construct(object $result)
+    public function __construct(object|string $result)
     {
         $this->result = $result;
     }
@@ -97,6 +98,10 @@ class ObjectMapper
      */
     private function mapData(array $data, string|array|FormRequest $defaultData): object
     {
+        if (is_string($this->result)) {
+            $this->result = (new ConstructorMapper($this->result))->map($data);
+        }
+
         $analyzer   = new ObjectAnalyzer($this->result);
         $properties = $analyzer->getProperties();
 
