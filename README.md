@@ -77,6 +77,129 @@ a string is treated as JSON, an array as an array, a `FormRequest` as a request.
 `mapFromRequest($request, $onlyValidated = true)` maps `$request->validated()` by default;
 pass `false` to map `$request->all()` instead.
 
+### Readonly DTOs and static constructors
+
+Passing a **class name** (instead of an instance) builds the object through its constructor —
+every parameter is resolved from the data with the same naming rules. This is how you map
+modern readonly DTOs:
+
+```php
+class User
+{
+    use MappableTrait;
+
+    public function __construct(
+        public readonly int $id,
+        #[MapFrom('full_name')]
+        public readonly string $name,
+        public readonly string $role = 'user',
+    ) {}
+}
+
+$user  = User::from('{"id": 1, "full_name": "John"}');   // single instance
+$users = User::fromMany('[{"id":1,"full_name":"A"}, {"id":2,"full_name":"B"}]'); // User[]
+// or without the trait:
+$user  = (new ObjectMapper(User::class))->mapFromJson($json);
+$users = ObjectMapper::mapArrayOf(User::class, $json);
+```
+
+Data missing for a required parameter without a default raises `MissingConstructorValueException`
+listing **all** missing parameters at once. Note: readonly properties that are NOT promoted
+constructor parameters still cannot be mapped and are skipped.
+
+## Attributes
+
+PHP attributes are the preferred way to configure mapping. phpDoc keeps working — resolution
+priority is **attribute → phpDoc → native type**, so existing DTOs stay untouched.
+
+| Attribute | Target | Effect |
+|---|---|---|
+| `#[MapFrom('user_id')]` | property, ctor param | reads the value from another data key; dot notation digs into nested arrays (`'data.attributes.name'`) |
+| `#[Ignore]` | property | the property is never mapped (and never serialized) |
+| `#[CastWith(MyType::class)]` | property, ctor param | converts the value with your own `Types\Type` subclass |
+| `#[ArrayOf(Address::class)]` | property, ctor param | maps a list into typed items; `depth: 2` for nested lists; works with simple types too (`#[ArrayOf('int')]`) |
+| `#[DateFormat('d.m.Y')]` | property, ctor param | parses `Carbon`/`DateTime` values with `createFromFormat`; mismatch throws `InvalidDateTimeValueException` |
+| `#[EnumFallback(Status::Unknown)]` | property, ctor param | unknown enum values resolve to the fallback case instead of throwing |
+| `#[FindModel]` | property, ctor param | opts an Eloquent-typed property into the `Model::find()` lookup (see below) |
+
+```php
+class Order
+{
+    #[MapFrom('data.attributes.number')]
+    public string $number;
+
+    #[ArrayOf(OrderLine::class)]
+    public array $lines = [];
+
+    #[DateFormat('Y-m-d H:i:s')]
+    public Carbon $paidAt;
+
+    #[EnumFallback(OrderStatus::Unknown)]
+    public OrderStatus $status;
+}
+```
+
+## Strict mode
+
+By default the mapper is forgiving: unknown keys are ignored and scalars are coerced PHP-style.
+`strict()` turns on validation and reports **all** problems at once:
+
+```php
+try {
+    $user = (new ObjectMapper(new User()))->strict()->mapFromArray($request->all());
+} catch (MappingFailedException $e) {
+    return response()->json(['errors' => array_map(
+        fn(array $list) => array_map(fn($err) => $err->getMessage(), $list),
+        $e->getErrors()                       // ['propertyOrKey' => ObjectMapperException[], ...]
+    )], 422);
+}
+```
+
+Strict mode collects:
+
+- `UnknownDataKeyException` — a data key matches no property;
+- `LossyConversionException` — a value would be silently mangled (`'abc'` into `int`, `'yes'` into `bool`);
+- `MissingRequiredValueException` — a non-nullable property received no value and has no default;
+- plus every regular conversion error, instead of failing on the first one.
+
+## Serialization (toArray / toJson)
+
+The reverse direction uses the same naming rules (`MapFrom` keys, phpDoc renames):
+
+```php
+$user->toArray();   // ['user_id' => 1, 'full_name' => 'John', ...]
+$user->toJson();
+// without the trait: (new \Shureban\LaravelObjectMapper\Serializer())->toArray($user);
+```
+
+Enums serialize to their value (`->name` for pure enums), dates honor `#[DateFormat]`
+(ISO 8601 otherwise), Eloquent models collapse to their primary key, nested objects and
+collections are serialized recursively. `#[Ignore]`d and uninitialized properties are skipped.
+Set config `serialize_snake_case => true` to snake_case all unmapped property names.
+
+## Controller injection
+
+A DTO implementing the `MapsFromRequest` marker interface resolves automatically from the
+current request when type-hinted in a controller:
+
+```php
+class CreateUserDto implements MapsFromRequest
+{
+    public string $email;
+    public string $name;
+}
+
+class UserController
+{
+    public function store(CreateUserDto $dto)  // already mapped from request()
+    {
+        // ...
+    }
+}
+```
+
+`FormRequest` bound to the container maps from `validated()`; a plain request maps from `all()`.
+
 ## Mappable cases
 
 Below you will see cases which you can use for mapping data into your object
@@ -253,17 +376,23 @@ Type-hint it accordingly (or use `mixed`) — a `array $rawData` hint would fail
 
 ### Eloquent models
 
-A property typed as an Eloquent model is resolved via `Model::find($value)`:
+A property typed as an Eloquent model is resolved via `Model::find($value)` — **but only when
+you opt in explicitly** (new in v2, because mapping raw request data into a DB lookup is a
+surprise nobody should get implicitly):
 
 ```php
 class Order
 {
+    #[FindModel]
     /** @var User $user_id */
     public User $user;   // $data['user_id'] = 10  =>  User::find(10)
 }
 ```
 
-Be aware of two things:
+Without the attribute, mapping such a property throws `ImplicitModelLookupException`.
+To restore the v1 behavior globally set `object_mapper.implicit_model_lookup => true`.
+
+Be aware:
 
 - **Mapping executes a database query.** If the data comes from an HTTP request, the client
   controls the looked-up primary key — apply authorization checks yourself.
@@ -295,7 +424,13 @@ try {
 | `InvalidDateTimeValueException` | a `Carbon`/`DateTime` property receives an empty, non-string or unparseable value |
 | `InvalidEnumValueException` | an enum property receives an unknown backing value, or the enum is not backed |
 | `InvalidModelKeyException` | an Eloquent-typed property receives a non-`int|string` primary key |
-| `InvalidValueTypeException` | a `string`/`int`/`float` property receives an array or object |
+| `InvalidValueTypeException` | a `string`/`int`/`float` property receives an array or object (also: abstract class targets) |
+| `ImplicitModelLookupException` | an Eloquent-typed property is mapped without `#[FindModel]` or the config opt-in |
+| `MissingConstructorValueException` | constructor mapping cannot resolve required parameters (lists all of them) |
+| `MappingFailedException` | strict mode: aggregate of all collected errors (`getErrors()`) |
+| `UnknownDataKeyException` | strict mode: a data key matches no property |
+| `LossyConversionException` | strict mode: a scalar coercion would lose information |
+| `MissingRequiredValueException` | strict mode: a required property received no value |
 
 ## Config rewriting
 
@@ -313,6 +448,26 @@ If you need to create your own type mapping, follow this way:
   a data key — there is no allowlist like Eloquent's `$fillable`. Keep DTOs that receive raw request
   data free of internal fields, or make such fields private/readonly.
 - **Eloquent-typed properties execute a DB lookup** with a client-supplied key (see above).
+
+## Config reference
+
+| Key | Default | Meaning |
+|---|---|---|
+| `snake_case_to_camel` | `true` | `foo_bar` data key feeds the `fooBar` property |
+| `implicit_model_lookup` | `false` | `true` restores v1 implicit `Model::find()` (no `#[FindModel]` needed) |
+| `assign_explicit_null` | `false` | `true` assigns explicit `null`s to nullable properties instead of skipping |
+| `serialize_snake_case` | `false` | `true` snake_cases unmapped property names in `toArray()` |
+| `types.*` | see file | type registry: override or register your own `Type` classes |
+
+## Migration from 1.x
+
+1. **Eloquent-typed properties** now require the `#[FindModel]` attribute — or set
+   `object_mapper.implicit_model_lookup => true` for the old behavior. Everything else is
+   backward compatible: DTOs based on phpDoc/native types map exactly as before.
+2. Malformed input that used to crash with raw `TypeError`/`ValueError` now throws
+   `ObjectMapperException` subclasses — if you caught those raw errors, catch
+   `ObjectMapperException` instead.
+3. The internal helper `Attributes\SetterName` moved to `Support\SetterName`.
 
 ## Testing
 

@@ -7,17 +7,26 @@ never change existing coercion behavior in a minor release; new behavior goes be
 ## Architecture
 
 ```
-ObjectMapper            entry point: map() / mapFromJson() / mapFromArray() / mapFromRequest()
-├── ObjectAnalyzer      reflects public properties of the target object, detects setters
-├── Property            wraps ReflectionProperty: name resolution (phpdoc rename, snake_case), type resolution
+ObjectMapper            entry point: map()/mapFromJson()/mapFromArray()/mapFromRequest(), strict(), mapArrayOf()
+├── ConstructorMapper   class-string mode: builds instance via constructor params (readonly DTOs)
+├── ObjectAnalyzer      thin facade over Support\ClassMetadata (per-class static reflection cache)
+├── Property            wraps ReflectionProperty: name resolution (MapFrom > phpdoc rename > name), attributes
 │   ├── PhpDoc          regex parser of @var docblocks (type, property rename, Type[] array notation)
-│   └── Types\Factory   resolves a Property to a Type instance (priority: phpdoc > declared type)
+│   └── Types\Factory   resolves Property/ReflectionParameter to a Type
+│       │               (priority: CastWith > ArrayOf > DateFormat > phpdoc > native type)
 │       ├── SimpleTypeFactory   config types.simple: string/int/float/bool/array/object/mixed
 │       ├── BoxTypeFactory      config types.box: Carbon/DateTime/Collection (by short name or FQCN)
-│       ├── CustomTypeFactory   config types.other: Enum (BackedEnum::from), Eloquent (Model::find), CustomType (recursive mapping)
+│       ├── CustomTypeFactory   config types.other: Enum (+EnumFallback), Eloquent (gated by FindModel/config),
+│       │                       CustomType (instance passthrough, static from() factory, recursive mapping)
 │       └── ClassExtraInformation  resolves short class names from the DTO file's `use` statements (regex on source)
+├── Serializer          reverse direction: toArray()/toJson() with the same naming rules
 └── Types\*             each Type has convert(mixed $value): mixed and getDefaultValue()
 ```
+
+Attributes live in `src/Attributes/` (MapFrom, Ignore, CastWith, ArrayOf, DateFormat,
+EnumFallback, FindModel) — all target properties AND constructor parameters.
+`Type::convert(mixed): mixed` signature is FROZEN — 1.x custom types must keep working;
+strict-mode checks live in `Support\StrictChecks`, called from ObjectMapper, never inside Types.
 
 - `MappableObject` (abstract class) and `MappableTrait` just delegate to `ObjectMapper($this)`.
 - `ArrayOfType` handles `Type[]`, `Type[][]` phpdoc notation recursively (nested level = count of `[]`).

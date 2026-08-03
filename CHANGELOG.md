@@ -4,9 +4,34 @@
 
 ### Breaking
 
+- **Eloquent lookup is opt-in now.** A property typed as an Eloquent model requires the
+  `#[FindModel]` attribute; without it `ImplicitModelLookupException` is thrown.
+  Set `object_mapper.implicit_model_lookup => true` to restore the v1 behavior globally.
 - `Shureban\LaravelObjectMapper\Attributes\SetterName` (internal helper) moved to
   `Shureban\LaravelObjectMapper\Support\SetterName` — the `Attributes` namespace now holds
   real PHP attributes only.
+
+### Added (v2 features)
+
+- **PHP attributes** (priority: attribute > phpDoc > native type; phpDoc keeps working):
+  `#[MapFrom('key')]` with dot notation, `#[Ignore]`, `#[CastWith(Type::class)]`,
+  `#[ArrayOf(Item::class, depth: N)]`, `#[DateFormat('d.m.Y')]`,
+  `#[EnumFallback(Enum::Case)]`, `#[FindModel]`.
+- **Readonly DTO support**: `new ObjectMapper(User::class)` builds the instance via constructor
+  mapping; `MappableTrait::from($data)` / `fromMany($data)`; missing required parameters are
+  reported all at once via `MissingConstructorValueException`.
+- **Collection mapping**: `ObjectMapper::mapArrayOf(User::class, $jsonOrArray)`.
+- **Strict mode**: `->strict()` aggregates unknown keys, lossy coercions, missing required
+  properties and all conversion errors into one `MappingFailedException` (`getErrors()`).
+- **Serialization**: `toArray()`/`toJson()` on the trait and a standalone `Serializer` —
+  reverse name mapping, enum/date/model/collection handling, `serialize_snake_case` config.
+- **Controller injection**: DTOs implementing `MapsFromRequest` resolve from the current
+  request automatically.
+- **Value objects**: a scalar value maps through a public static `from($value)` factory when
+  the target class defines one (private constructors supported).
+- **Performance**: per-class reflection metadata cache (`Support\ClassMetadata`) — properties,
+  setters and resolved types are computed once per class, not once per mapping.
+- Config: `assign_explicit_null` — assign explicit `null`s to nullable properties (default off).
 
 Focus: predictable error handling. Every malformed input now throws a subclass of
 `Shureban\LaravelObjectMapper\Exceptions\ObjectMapperException` instead of a raw PHP
