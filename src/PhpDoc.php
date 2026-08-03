@@ -4,8 +4,8 @@ namespace Shureban\LaravelObjectMapper;
 
 class PhpDoc
 {
-    private const PropertyNameRegex = '/@var[^\r\n]*?\$(?<name>\w+)/';
-    private const TypeNameRegex     = '/@var\s+\??(?<type>\\\\?[A-Za-z_][\w\\\\]*)(?<arrays>(\[\])*)/';
+    private const PropertyNameRegex = '/@var\s+(?:\??[\w\\\\|<>,]+(?:\s*\[\])*\s+)?\$(?<name>\w+)/';
+    private const TypeNameRegex     = '/@var\s+\??(?<type>\\\\?[A-Za-z_][\w\\\\]*)(?<arrays>(\s*\[\])*)/';
 
     private string $phpDoc;
 
@@ -63,7 +63,7 @@ class PhpDoc
     public function arrayNestedLevel(): int
     {
         if (preg_match(self::TypeNameRegex, $this->phpDoc, $regexResult)) {
-            return (int)(strlen($regexResult['arrays'] ?? '') / 2);
+            return substr_count($regexResult['arrays'] ?? '', '[]');
         }
 
         return 0;

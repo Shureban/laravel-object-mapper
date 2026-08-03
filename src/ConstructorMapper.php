@@ -5,9 +5,11 @@ namespace Shureban\LaravelObjectMapper;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use ReflectionParameter;
+use Shureban\LaravelObjectMapper\Attributes\Ignore;
 use Shureban\LaravelObjectMapper\Attributes\MapFrom;
 use Shureban\LaravelObjectMapper\Exceptions\MissingConstructorValueException;
 use Shureban\LaravelObjectMapper\Support\ClassMetadata;
+use Shureban\LaravelObjectMapper\Support\KeyPath;
 use Shureban\LaravelObjectMapper\Types\Factory;
 
 class ConstructorMapper
@@ -62,7 +64,21 @@ class ConstructorMapper
                 continue;
             }
 
-            $arguments[] = Factory::makeForParameter($parameter)->convert($value);
+            $converted = Factory::makeForParameter($parameter)->convert($value);
+
+            // A converter may map a present value to null (e.g. Eloquent lookup miss);
+            // a non-nullable parameter then falls back to its default or is reported missing.
+            if ($converted === null && !$parameter->allowsNull()) {
+                if ($parameter->isDefaultValueAvailable()) {
+                    $arguments[] = $parameter->getDefaultValue();
+                    continue;
+                }
+
+                $missing[] = $parameter->getName();
+                continue;
+            }
+
+            $arguments[] = $converted;
         }
 
         if ($missing !== []) {
@@ -119,20 +135,41 @@ class ConstructorMapper
      */
     private function getParameterValue(ReflectionParameter $parameter, array $data): mixed
     {
+        if ($this->isIgnored($parameter)) {
+            return null;
+        }
+
         $attributes   = $parameter->getAttributes(MapFrom::class);
         $originalName = $attributes === [] ? $parameter->getName() : $attributes[0]->newInstance()->key;
 
+        $otherCaseAllowed = config('object_mapper.snake_case_to_camel');
+
         if (str_contains($originalName, '.')) {
-            return Arr::get($data, $originalName);
+            $value = Arr::get($data, $originalName);
+
+            if ($value === null && $otherCaseAllowed) {
+                $value = Arr::get($data, KeyPath::snake($originalName));
+            }
+
+            return $value;
         }
 
-        $snakeCaseName    = Str::snake($originalName);
-        $otherCaseAllowed = config('object_mapper.snake_case_to_camel');
+        $snakeCaseName = Str::snake($originalName);
 
         return match (true) {
             isset($data[$originalName])                       => $data[$originalName],
             $otherCaseAllowed && isset($data[$snakeCaseName]) => $data[$snakeCaseName],
             default                                           => null,
         };
+    }
+
+    /**
+     * @param ReflectionParameter $parameter
+     *
+     * @return bool
+     */
+    private function isIgnored(ReflectionParameter $parameter): bool
+    {
+        return $parameter->getAttributes(Ignore::class) !== [];
     }
 }

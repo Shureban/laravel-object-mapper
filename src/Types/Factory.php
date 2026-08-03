@@ -116,14 +116,46 @@ class Factory
             return new ArrayOfType($itemType, $instance->depth);
         }
 
-        $dateFormat     = $holder->getAttributes(DateFormat::class);
+        $dateFormat = $holder->getAttributes(DateFormat::class);
+
+        if ($dateFormat !== []) {
+            $typeName = self::resolveDateTypeName($holder);
+
+            if ($typeName !== null) {
+                return new DateFormatType($typeName, $dateFormat[0]->newInstance()->format);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The date class #[DateFormat] applies to: the native type when present,
+     * otherwise the phpDoc @var type (properties only) — attribute > phpDoc priority.
+     *
+     * @param ReflectionProperty|ReflectionParameter $holder
+     *
+     * @return string|null
+     */
+    private static function resolveDateTypeName(ReflectionProperty|ReflectionParameter $holder): ?string
+    {
+        $dateClasses    = [DateTime::class, Carbon::class, SupportCarbon::class];
         $reflectionType = $holder->getType();
 
-        if ($dateFormat !== [] && $reflectionType instanceof ReflectionNamedType) {
-            $dateClasses = [DateTime::class, Carbon::class, SupportCarbon::class];
+        if ($reflectionType instanceof ReflectionNamedType && in_array($reflectionType->getName(), $dateClasses, true)) {
+            return $reflectionType->getName();
+        }
 
-            if (in_array($reflectionType->getName(), $dateClasses, true)) {
-                return new DateFormatType($reflectionType->getName(), $dateFormat[0]->newInstance()->format);
+        if ($reflectionType === null && $holder instanceof ReflectionProperty) {
+            $phpDoc = new PhpDoc((string)$holder->getDocComment());
+
+            if ($phpDoc->hasType()) {
+                $typeName = $phpDoc->getPropertyType();
+                $typeName = $typeName === 'Carbon' ? Carbon::class : $typeName;
+
+                if (in_array($typeName, $dateClasses, true)) {
+                    return $typeName;
+                }
             }
         }
 

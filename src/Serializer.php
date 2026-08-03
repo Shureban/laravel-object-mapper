@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use JsonSerializable;
 use Shureban\LaravelObjectMapper\Attributes\DateFormat;
 use Shureban\LaravelObjectMapper\Support\ClassMetadata;
+use stdClass;
 use UnitEnum;
 
 class Serializer
@@ -76,10 +78,36 @@ class Serializer
             $value instanceof UnitEnum          => $value->name,
             $value instanceof DateTimeInterface => $value->format($dateFormat instanceof DateFormat ? $dateFormat->format : 'c'),
             $value instanceof Model             => $value->getKey(),
-            $value instanceof Collection        => $value->values()->map(fn(mixed $item) => $this->serializeValue($item, null))->toArray(),
+            $value instanceof Collection        => $value->map(fn(mixed $item) => $this->serializeValue($item, null))->toArray(),
             is_array($value)                    => array_map(fn(mixed $item) => $this->serializeValue($item, null), $value),
-            is_object($value)                   => $this->toArray($value),
+            is_object($value)                   => $this->serializeObject($value),
             default                             => $value,
         };
+    }
+
+    /**
+     * Nested objects delegate to their own serialization when they provide it
+     * (toArray/JsonSerializable); stdClass keeps its dynamic properties; every
+     * other object goes through the reflection-based toArray().
+     *
+     * @param object $value
+     *
+     * @return mixed
+     */
+    private function serializeObject(object $value): mixed
+    {
+        if ($value instanceof stdClass) {
+            return array_map(fn(mixed $item) => $this->serializeValue($item, null), get_object_vars($value));
+        }
+
+        if (method_exists($value, 'toArray')) {
+            return $value->toArray();
+        }
+
+        if ($value instanceof JsonSerializable) {
+            return $value->jsonSerialize();
+        }
+
+        return $this->toArray($value);
     }
 }

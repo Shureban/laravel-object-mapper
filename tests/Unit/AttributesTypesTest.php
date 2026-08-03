@@ -8,6 +8,7 @@ use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Tests\TestCase;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\AttributeTypesClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypeForArrayOf;
+use Shureban\LaravelObjectMapper\Tests\Unit\Structs\PhpDocDateFormatClass;
 
 class AttributesTypesTest extends TestCase
 {
@@ -57,5 +58,20 @@ class AttributesTypesTest extends TestCase
             fn() => (new ObjectMapper(new AttributeTypesClass()))->mapFromArray(['birthday' => 123]),
             InvalidDateTimeValueException::class
         );
+    }
+
+    public function test_dateOnlyFormatDoesNotLeakCurrentTime()
+    {
+        $result = (new ObjectMapper(new AttributeTypesClass()))->mapFromArray(['birthday' => '31.12.1991']);
+
+        $this->assertSame('00:00:00', $result->birthday->format('H:i:s'));
+    }
+
+    public function test_dateFormatWorksWithPhpDocOnlyType()
+    {
+        $result = (new ObjectMapper(new PhpDocDateFormatClass()))->mapFromArray(['date' => '25/12/2024']);
+
+        $this->assertInstanceOf(\DateTime::class, $result->date);
+        $this->assertSame('2024-12-25', $result->date->format('Y-m-d'));
     }
 }

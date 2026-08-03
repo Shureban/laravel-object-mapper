@@ -4,6 +4,7 @@ namespace Shureban\LaravelObjectMapper\Tests\Unit;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Shureban\LaravelObjectMapper\ObjectMapper;
+use Shureban\LaravelObjectMapper\Tests\Unit\Structs\LowercaseSetterClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\WithSetterClass;
 use Shureban\LaravelObjectMapper\Tests\TestCase;
 
@@ -17,5 +18,12 @@ class WithSetterTest extends TestCase
         $this->assertEquals('setter_from_json_value', (new ObjectMapper(new WithSetterClass()))->mapFromJson('{"from_json_value": "from_json_value"}')->fromJsonValue);
         $this->assertEquals('setter_fromArrayValue', (new ObjectMapper(new WithSetterClass()))->mapFromArray(['fromArrayValue' => 'fromArrayValue'])->fromArrayValue);
         $this->assertEquals('setter_from_request_value', (new ObjectMapper(new WithSetterClass()))->mapFromRequest($request, false)->from_request_value);
+    }
+
+    public function test_setterDeclaredInDifferentCaseIsStillCalled()
+    {
+        $result = (new ObjectMapper(new LowercaseSetterClass()))->mapFromArray(['tags' => 'a,b,c']);
+
+        $this->assertSame(['a', 'b', 'c'], $result->tags);
     }
 }

@@ -4,19 +4,30 @@ namespace Shureban\LaravelObjectMapper;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Shureban\LaravelObjectMapper\Exceptions\InvalidJsonStructureException;
 use Shureban\LaravelObjectMapper\Exceptions\InvalidValueTypeException;
 use Shureban\LaravelObjectMapper\Exceptions\MappingFailedException;
+use Shureban\LaravelObjectMapper\Exceptions\MissingConstructorValueException;
 use Shureban\LaravelObjectMapper\Exceptions\MissingRequiredValueException;
 use Shureban\LaravelObjectMapper\Exceptions\ObjectMapperException;
 use Shureban\LaravelObjectMapper\Exceptions\ParseJsonException;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownDataFormatException;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownDataKeyException;
+use Shureban\LaravelObjectMapper\Support\ClassMetadata;
+use Shureban\LaravelObjectMapper\Support\KeyPath;
 use Shureban\LaravelObjectMapper\Support\SetterName;
 use Shureban\LaravelObjectMapper\Support\StrictChecks;
 
 class ObjectMapper
 {
+    /**
+     * Strict mode of the mapping currently in progress. Types stay strict-agnostic:
+     * nested mappers created inside them (CustomType, ArrayOf items) inherit
+     * strictness from this context instead of a constructor argument.
+     */
+    private static bool $strictContext = false;
+
     private object|string $result;
     private ?string       $constructorClass = null;
     private bool          $strict           = false;
@@ -164,19 +175,42 @@ class ObjectMapper
      */
     private function mapData(array $data, string|array|FormRequest $defaultData): object
     {
-        if (is_string($this->result)) {
-            $this->constructorClass = $this->result;
-            $this->result           = (new ConstructorMapper($this->result))->map($data);
+        $this->strict    = $this->strict || self::$strictContext;
+        $previousContext = self::$strictContext;
+
+        self::$strictContext = $this->strict;
+
+        try {
+            return $this->doMapData($data, $defaultData);
+        } finally {
+            self::$strictContext = $previousContext;
+        }
+    }
+
+    /**
+     * @param array                    $data
+     * @param string|array|FormRequest $defaultData
+     *
+     * @return object
+     * @throws ObjectMapperException
+     */
+    private function doMapData(array $data, string|array|FormRequest $defaultData): object
+    {
+        $target = $this->result;
+
+        if (is_string($target)) {
+            $this->constructorClass = $target;
+            $target                 = $this->buildViaConstructor($target, $data);
         }
 
-        $analyzer   = new ObjectAnalyzer($this->result);
+        $analyzer   = new ObjectAnalyzer($target);
         $properties = $analyzer->getProperties();
         $errors     = [];
 
         /** @var Property $property */
         foreach ($properties as $property) {
             try {
-                $this->mapProperty($property, $analyzer, $data, $defaultData);
+                $this->mapProperty($target, $property, $analyzer, $data, $defaultData);
             } catch (ObjectMapperException $exception) {
                 if (!$this->strict) {
                     throw $exception;
@@ -188,17 +222,50 @@ class ObjectMapper
 
         if ($this->strict) {
             $this->collectUnknownKeys($properties, $data, $errors);
-            $this->collectMissingRequired($properties, $errors);
+            $this->collectMissingRequired($target, $properties, $errors);
 
             if ($errors !== []) {
                 throw new MappingFailedException($errors);
             }
         }
 
-        return $this->result;
+        return $target;
     }
 
     /**
+     * Constructor-mode instantiation. In strict mode a missing-values failure is
+     * reported the same way as property errors: aggregated into MappingFailedException
+     * together with the unknown data keys.
+     *
+     * @param class-string $class
+     * @param array        $data
+     *
+     * @return object
+     * @throws ObjectMapperException
+     */
+    private function buildViaConstructor(string $class, array $data): object
+    {
+        try {
+            return (new ConstructorMapper($class))->map($data);
+        } catch (MissingConstructorValueException $exception) {
+            if (!$this->strict) {
+                throw $exception;
+            }
+
+            $errors = [];
+
+            foreach ($exception->getParameters() as $parameterName) {
+                $errors[$parameterName][] = new MissingRequiredValueException($parameterName);
+            }
+
+            $this->collectUnknownKeys(ClassMetadata::for($class)->getProperties(), $data, $errors);
+
+            throw new MappingFailedException($errors);
+        }
+    }
+
+    /**
+     * @param object                   $target
      * @param Property                 $property
      * @param ObjectAnalyzer           $analyzer
      * @param array                    $data
@@ -207,7 +274,7 @@ class ObjectMapper
      * @return void
      * @throws ObjectMapperException
      */
-    private function mapProperty(Property $property, ObjectAnalyzer $analyzer, array $data, string|array|FormRequest $defaultData): void
+    private function mapProperty(object $target, Property $property, ObjectAnalyzer $analyzer, array $data, string|array|FormRequest $defaultData): void
     {
         $value = $this->getPropertyValue($property, $data);
 
@@ -215,7 +282,7 @@ class ObjectMapper
             $assignNullAllowed = config('object_mapper.assign_explicit_null') === true;
 
             if ($assignNullAllowed && $property->isNullable() && !$property->isReadOnly() && !$property->isIgnored() && $this->hasExplicitNull($property, $data)) {
-                $this->result->{$property->getObjectPropertyName()} = null;
+                $target->{$property->getObjectPropertyName()} = null;
             }
 
             return;
@@ -225,7 +292,7 @@ class ObjectMapper
         $setterName         = (string)new SetterName($objectPropertyName);
 
         if ($analyzer->hasSetter($setterName)) {
-            call_user_func_array([$this->result, $setterName], [$value, $defaultData]);
+            call_user_func_array([$target, $setterName], [$value, $defaultData]);
 
             return;
         }
@@ -236,11 +303,13 @@ class ObjectMapper
 
         $convertedValue = $property->convert($value);
 
-        if ($convertedValue === null) {
+        // A converter may legitimately map a present value to null (custom types);
+        // non-nullable properties keep their default instead (e.g. Eloquent lookup miss).
+        if ($convertedValue === null && !$property->isNullable()) {
             return;
         }
 
-        $this->result->{$objectPropertyName} = $convertedValue;
+        $target->{$objectPropertyName} = $convertedValue;
     }
 
     /**
@@ -276,19 +345,26 @@ class ObjectMapper
     }
 
     /**
+     * @param object                                  $target
      * @param array|Property[]                        $properties
      * @param array<string, ObjectMapperException[]> &$errors
      *
      * @return void
      */
-    private function collectMissingRequired(array $properties, array &$errors): void
+    private function collectMissingRequired(object $target, array $properties, array &$errors): void
     {
         foreach ($properties as $property) {
             if ($property->isReadOnly() || $property->isIgnored() || $property->isNullable()) {
                 continue;
             }
 
-            if (!$property->isInitialized($this->result)) {
+            // A property whose value already failed is reported once — a conversion
+            // error must not produce an extra false "no value provided" entry.
+            if (isset($errors[$property->getObjectPropertyName()])) {
+                continue;
+            }
+
+            if (!$property->isInitialized($target)) {
                 $errors[$property->getObjectPropertyName()][] = new MissingRequiredValueException($property->getObjectPropertyName());
             }
         }
@@ -313,7 +389,13 @@ class ObjectMapper
         $otherCaseAllowed = config('object_mapper.snake_case_to_camel');
 
         if (str_contains($originalName, '.')) {
-            return Arr::get($data, $originalName);
+            $value = Arr::get($data, $originalName);
+
+            if ($value === null && $otherCaseAllowed) {
+                $value = Arr::get($data, KeyPath::snake($originalName));
+            }
+
+            return $value;
         }
 
         return match (true) {
@@ -341,7 +423,7 @@ class ObjectMapper
             return $topLevelName;
         }
 
-        $snakeCaseName = $property->getSnakeCaseName();
+        $snakeCaseName = Str::snake($topLevelName);
 
         if (config('object_mapper.snake_case_to_camel') && array_key_exists($snakeCaseName, $data)) {
             return $snakeCaseName;
@@ -361,7 +443,15 @@ class ObjectMapper
         $originalName = $property->getOriginalName();
 
         if (str_contains($originalName, '.')) {
-            return Arr::has($data, $originalName) && Arr::get($data, $originalName) === null;
+            if (Arr::has($data, $originalName)) {
+                return Arr::get($data, $originalName) === null;
+            }
+
+            $snakeCasePath = KeyPath::snake($originalName);
+
+            return config('object_mapper.snake_case_to_camel') === true
+                && Arr::has($data, $snakeCasePath)
+                && Arr::get($data, $snakeCasePath) === null;
         }
 
         if (array_key_exists($originalName, $data)) {

@@ -37,10 +37,14 @@ class DateFormatType extends ObjectType
             throw new InvalidDateTimeValueException($this->dateClass, $value);
         }
 
+        // Reset unspecified fields to zero instead of the current wall-clock time,
+        // so a date-only format always produces a deterministic 00:00:00.
+        $format = str_contains($this->format, '!') || str_contains($this->format, '|') ? $this->format : '!' . $this->format;
+
         try {
             $result = $this->dateClass === DateTime::class
-                ? DateTime::createFromFormat($this->format, $value, $this->getTimezone())
-                : SupportCarbon::createFromFormat($this->format, $value, $this->getTimezone());
+                ? DateTime::createFromFormat($format, $value, $this->getTimezone())
+                : SupportCarbon::createFromFormat($format, $value, $this->getTimezone());
         } catch (Throwable $exception) {
             throw new InvalidDateTimeValueException($this->dateClass, $value, 0, $exception);
         }

@@ -9,6 +9,7 @@ use Shureban\LaravelObjectMapper\Exceptions\InvalidEnumValueException;
 use Shureban\LaravelObjectMapper\Exceptions\InvalidJsonStructureException;
 use Shureban\LaravelObjectMapper\Exceptions\InvalidModelKeyException;
 use Shureban\LaravelObjectMapper\Exceptions\InvalidValueTypeException;
+use Shureban\LaravelObjectMapper\Exceptions\MissingConstructorValueException;
 use Shureban\LaravelObjectMapper\Exceptions\ParseJsonException;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownPropertyTypeException;
 use Shureban\LaravelObjectMapper\Exceptions\WrongConstructorParametersNumberException;
@@ -130,11 +131,18 @@ class ErrorHandlingTest extends TestCase
         $this->assertFalse(isset($result->model));
     }
 
-    public function test_arrayValueForConstructorWithRequiredParametersThrows()
+    public function test_arrayValueForConstructorWithRequiredParametersIsBuiltViaConstructor()
+    {
+        $result = (new ObjectMapper(new CustomTypeWithConstructorClass()))->mapFromArray(['intTypeOne' => ['id' => 1]]);
+
+        $this->assertSame(1, $result->intTypeOne->id);
+    }
+
+    public function test_arrayValueMissingConstructorKeysThrows()
     {
         $this->assertThrows(
-            fn() => (new ObjectMapper(new CustomTypeWithConstructorClass()))->mapFromArray(['intTypeOne' => ['id' => 1]]),
-            WrongConstructorParametersNumberException::class
+            fn() => (new ObjectMapper(new CustomTypeWithConstructorClass()))->mapFromArray(['intTypeOne' => ['bogus' => 1]]),
+            MissingConstructorValueException::class
         );
     }
 

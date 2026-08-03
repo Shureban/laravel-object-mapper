@@ -57,6 +57,37 @@ Focus: predictable error handling. Every malformed input now throws a subclass o
 
 ### Fixed
 
+- `#[Ignore]` is respected in constructor mapping: an ignored promoted (or plain) constructor
+  parameter is never filled from the input data — it falls back to its default value.
+  The attribute now targets constructor parameters as well as properties.
+- `MapsFromRequest` controller injection resolves the FormRequest declared in the route action's
+  signature and maps from its `validated()` data. Only when the route declares no FormRequest does
+  the DTO fall back to the raw `request->all()`.
+- A reused class-string `ObjectMapper` builds a fresh instance per `map*()` call instead of
+  returning the first instance (and its data) for every later call.
+- `Serializer`: `object`/`stdClass`-typed properties keep their dynamic properties; nested objects
+  providing their own `toArray()` (or `JsonSerializable`) are delegated to it; `Collection`
+  properties keep string keys.
+- `@var Type [] $items` (space between the type and `[]`) is recognized as array notation again.
+- Setter lookup is case-insensitive again (PHP method names are case-insensitive) —
+  a `settags()` setter is found for the `tags` property, as in v1.
+- `#[DateFormat]` resets unspecified date fields: a date-only format produces `00:00:00`
+  instead of leaking the current wall-clock time. The attribute also works when the date type
+  comes from phpDoc only (untyped property with `@var \DateTime`).
+- `CustomType` conversion order keeps the v1 contract: the single-argument constructor wins over
+  a `public static from()` factory; `from()` is used only when its signature fits the value.
+  Incompatible payloads (private constructor, wrong argument type) throw `ObjectMapperException`
+  subclasses instead of leaking raw `Error`/`TypeError`. An array value for a class whose public
+  constructor has required parameters is built via constructor mapping (nested readonly DTOs).
+- A converter returning `null` for a present value assigns `null` to nullable properties
+  (v1 parity for custom types); non-nullable properties keep their default (Eloquent lookup miss).
+- Dotted `#[MapFrom('parent.child')]` keys fall back to the snake_case form of every segment
+  (`parent_key.child_key`), matching the non-dotted lookup rules.
+- Strict mode propagates into nested DTO and `#[ArrayOf]` mapping; scalar `ArrayOf` items are
+  validated against the declared item type; constructor-phase missing values are aggregated into
+  `MappingFailedException` (with unknown keys) instead of escaping as
+  `MissingConstructorValueException`; a failed conversion no longer produces an extra false
+  "no value provided" error for the same property.
 - **PhpDoc parsing rewritten.** The old `@var` regex contained an accidental `BEL-to-'z'` character
   range, so a standard multiline docblock (`* @var int` with no trailing space) captured the type as
   `"int\n"` and crashed the whole mapping. Now supported: multiline `@var int`, `@var ?int`,

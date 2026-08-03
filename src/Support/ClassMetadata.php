@@ -74,10 +74,11 @@ class ClassMetadata
             $methods = $this->reflection->getMethods(ReflectionMethod::IS_PUBLIC);
             $methods = array_filter($methods, fn(ReflectionMethod $method) => !$method->isStatic());
 
-            $this->publicSetters = array_fill_keys(array_map(fn(ReflectionMethod $method) => $method->getName(), $methods), true);
+            // PHP method names are case-insensitive — the lookup must be too.
+            $this->publicSetters = array_fill_keys(array_map(fn(ReflectionMethod $method) => strtolower($method->getName()), $methods), true);
         }
 
-        return isset($this->publicSetters[$methodName]);
+        return isset($this->publicSetters[strtolower($methodName)]);
     }
 
     /**

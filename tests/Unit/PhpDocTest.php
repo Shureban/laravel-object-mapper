@@ -57,6 +57,28 @@ DOC
         ))->isArrayOf());
     }
 
+    public function test_dollarWordInDescriptionIsNotPropertyName()
+    {
+        $this->assertNull((new PhpDoc('/** @var int Price in $USD */'))->getPropertyName());
+        $this->assertNull((new PhpDoc('/** @var int Count of $items */'))->getPropertyName());
+        $this->assertNull((new PhpDoc(<<<DOC
+/**
+* Some description.
+* @var int Count of \$items
+*/
+DOC
+        ))->getPropertyName());
+        $this->assertEquals('price', (new PhpDoc('/** @var int $price Price in $USD */'))->getPropertyName());
+    }
+
+    public function test_spaceBetweenTypeAndBracketsIsStillArrayNotation()
+    {
+        $this->assertTrue((new PhpDoc('/** @var Item [] $items */'))->isArrayOf());
+        $this->assertEquals(1, (new PhpDoc('/** @var Item [] $items */'))->arrayNestedLevel());
+        $this->assertEquals('items', (new PhpDoc('/** @var Item [] $items */'))->getPropertyName());
+        $this->assertEquals('Item', (new PhpDoc('/** @var Item [] $items */'))->getPropertyType());
+    }
+
     public function test_arrayNestedLevel()
     {
         $this->assertEquals(0, (new PhpDoc('/** @var string */'))->arrayNestedLevel());

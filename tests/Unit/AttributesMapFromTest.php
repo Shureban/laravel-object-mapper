@@ -5,6 +5,7 @@ namespace Shureban\LaravelObjectMapper\Tests\Unit;
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Tests\TestCase;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\AttributeNamingClass;
+use Shureban\LaravelObjectMapper\Tests\Unit\Structs\DottedMapFromClass;
 
 class AttributesMapFromTest extends TestCase
 {
@@ -36,5 +37,14 @@ class AttributesMapFromTest extends TestCase
         $result = (new ObjectMapper(new AttributeNamingClass()))->mapFromArray(['secret' => 'hacked']);
 
         $this->assertSame('untouched', $result->secret);
+    }
+
+    public function test_dottedKeyFallsBackToSnakeCaseSegments()
+    {
+        $result = (new ObjectMapper(new DottedMapFromClass()))->mapFromArray([
+            'shipping_address' => ['city' => 'Kyiv'],
+        ]);
+
+        $this->assertSame('Kyiv', $result->city);
     }
 }

@@ -5,6 +5,8 @@ namespace Shureban\LaravelObjectMapper\Tests\Unit;
 use Shureban\LaravelObjectMapper\Exceptions\MissingConstructorValueException;
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\Unit\Structs\DottedCtorDtoClass;
+use Shureban\LaravelObjectMapper\Tests\Unit\Structs\IgnoredPromotedDtoClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\ReadonlyDtoClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\SimpleTypeClass;
 
@@ -59,5 +61,32 @@ class ConstructorMappingTest extends TestCase
 
         $this->assertInstanceOf(SimpleTypeClass::class, $result);
         $this->assertSame(10, $result->int);
+    }
+
+    public function test_ignoredPromotedPropertyIsNeverFilledFromData()
+    {
+        $dto = IgnoredPromotedDtoClass::from(['email' => 'a@b.c', 'isAdmin' => true]);
+
+        $this->assertSame('a@b.c', $dto->email);
+        $this->assertFalse($dto->isAdmin);
+    }
+
+    public function test_dottedMapFromParamFallsBackToSnakeCaseSegments()
+    {
+        $dto = DottedCtorDtoClass::from(['user_profile' => ['first_name' => 'Ann']]);
+
+        $this->assertSame('Ann', $dto->firstName);
+    }
+
+    public function test_reusedClassStringMapperBuildsFreshInstancePerCall()
+    {
+        $mapper = new ObjectMapper(ReadonlyDtoClass::class);
+
+        $first  = $mapper->mapFromArray(['id' => 1, 'full_name' => 'first']);
+        $second = $mapper->mapFromArray(['id' => 2, 'full_name' => 'second']);
+
+        $this->assertNotSame($first, $second);
+        $this->assertSame('first', $first->name);
+        $this->assertSame('second', $second->name);
     }
 }

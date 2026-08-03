@@ -3,6 +3,7 @@
 namespace Shureban\LaravelObjectMapper\Support;
 
 use Shureban\LaravelObjectMapper\Exceptions\LossyConversionException;
+use Shureban\LaravelObjectMapper\Types\ArrayOfType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\BoolType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\FloatType;
 use Shureban\LaravelObjectMapper\Types\SimpleTypes\IntType;
@@ -14,7 +15,8 @@ class StrictChecks
 
     /**
      * Pre-conversion validation for strict mode: rejects values the loose
-     * converters would silently mangle.
+     * converters would silently mangle. ArrayOf types validate every item
+     * against the declared item type, recursively for nested levels.
      *
      * @param Type  $type
      * @param mixed $value
@@ -24,6 +26,16 @@ class StrictChecks
      */
     public static function validate(Type $type, mixed $value): void
     {
+        if ($type instanceof ArrayOfType && is_array($value)) {
+            foreach ($value as $item) {
+                $type->getNestedLevel() === 1
+                    ? self::validate($type->getItemType(), $item)
+                    : self::validate(new ArrayOfType($type->getItemType(), $type->getNestedLevel() - 1), $item);
+            }
+
+            return;
+        }
+
         if ($type instanceof IntType && !is_numeric($value)) {
             throw new LossyConversionException('int', $value);
         }

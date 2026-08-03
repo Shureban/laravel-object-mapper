@@ -8,8 +8,10 @@ use Shureban\LaravelObjectMapper\Exceptions\MissingRequiredValueException;
 use Shureban\LaravelObjectMapper\Exceptions\UnknownDataKeyException;
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\Unit\Structs\ReadonlyDtoClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\RequiredPropsClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\SimpleTypeClass;
+use Shureban\LaravelObjectMapper\Tests\Unit\Structs\StrictNestedHolderClass;
 
 class StrictModeTest extends TestCase
 {
@@ -69,5 +71,61 @@ class StrictModeTest extends TestCase
         $result = (new ObjectMapper(new SimpleTypeClass()))->mapFromArray(['int' => 'abc']);
 
         $this->assertSame(0, $result->int);
+    }
+
+    public function test_strictPropagatesIntoNestedObjects()
+    {
+        try {
+            (new ObjectMapper(new StrictNestedHolderClass()))->strict()->mapFromArray([
+                'inner' => ['id' => 'abc', 'unknownKey' => 1],
+            ]);
+            $this->fail('Expected MappingFailedException');
+        } catch (MappingFailedException $exception) {
+            $nested = $exception->getErrors()['inner'][0];
+
+            $this->assertInstanceOf(MappingFailedException::class, $nested);
+            $this->assertInstanceOf(LossyConversionException::class, $nested->getErrors()['id'][0]);
+            $this->assertInstanceOf(UnknownDataKeyException::class, $nested->getErrors()['unknownKey'][0]);
+        }
+    }
+
+    public function test_strictValidatesArrayOfScalarItems()
+    {
+        try {
+            (new ObjectMapper(new StrictNestedHolderClass()))->strict()->mapFromArray([
+                'inner' => ['id' => 1],
+                'ids'   => ['1', 'x'],
+            ]);
+            $this->fail('Expected MappingFailedException');
+        } catch (MappingFailedException $exception) {
+            $this->assertInstanceOf(LossyConversionException::class, $exception->getErrors()['ids'][0]);
+        }
+    }
+
+    public function test_strictAggregatesConstructorErrors()
+    {
+        try {
+            (new ObjectMapper(ReadonlyDtoClass::class))->strict()->mapFromArray(['bogus' => 1]);
+            $this->fail('Expected MappingFailedException');
+        } catch (MappingFailedException $exception) {
+            $errors = $exception->getErrors();
+
+            $this->assertInstanceOf(MissingRequiredValueException::class, $errors['id'][0]);
+            $this->assertInstanceOf(MissingRequiredValueException::class, $errors['name'][0]);
+            $this->assertInstanceOf(UnknownDataKeyException::class, $errors['bogus'][0]);
+        }
+    }
+
+    public function test_conversionErrorIsNotAlsoReportedAsMissing()
+    {
+        try {
+            (new ObjectMapper(new RequiredPropsClass()))->strict()->mapFromArray(['id' => 'abc']);
+            $this->fail('Expected MappingFailedException');
+        } catch (MappingFailedException $exception) {
+            $errors = $exception->getErrors();
+
+            $this->assertCount(1, $errors['id']);
+            $this->assertInstanceOf(LossyConversionException::class, $errors['id'][0]);
+        }
     }
 }
