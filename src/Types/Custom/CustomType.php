@@ -47,6 +47,10 @@ class CustomType extends ObjectType
             return (new ObjectMapper(new $this->classNamespace()))->mapFromArray((array)$value);
         }
 
+        if ($this->hasStaticFromFactory($reflection)) {
+            return call_user_func([$this->classNamespace, 'from'], $value);
+        }
+
         $constructorTakesNoParameters = is_null($constructor) || $constructor->getNumberOfParameters() === 0;
 
         if ($constructorTakesNoParameters || $requiredParameters > 1) {
@@ -54,5 +58,21 @@ class CustomType extends ObjectType
         }
 
         return new $this->classNamespace($value);
+    }
+
+    /**
+     * @param ReflectionClass $reflection
+     *
+     * @return bool
+     */
+    private function hasStaticFromFactory(ReflectionClass $reflection): bool
+    {
+        if (!$reflection->hasMethod('from')) {
+            return false;
+        }
+
+        $method = $reflection->getMethod('from');
+
+        return $method->isPublic() && $method->isStatic();
     }
 }
