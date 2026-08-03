@@ -28,6 +28,9 @@ return [
     // (by default null values are skipped and the property keeps its default).
     'assign_explicit_null' => false,
 
+    // When true, Serializer/toArray() converts unmapped property names to snake_case.
+    'serialize_snake_case' => false,
+
     'types' => [
         'simple' => [
             'string'  => StringType::class,

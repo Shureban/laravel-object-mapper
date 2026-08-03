@@ -71,4 +71,22 @@ trait MappableTrait
     {
         return (new ObjectMapper($this))->mapFromRequest($request, $onlyValidated);
     }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return (new Serializer())->toArray($this);
+    }
+
+    /**
+     * @param int $flags
+     *
+     * @return string
+     */
+    public function toJson(int $flags = 0): string
+    {
+        return json_encode($this->toArray(), $flags);
+    }
 }
