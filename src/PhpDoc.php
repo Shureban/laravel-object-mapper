@@ -4,8 +4,8 @@ namespace Shureban\LaravelObjectMapper;
 
 class PhpDoc
 {
-    private const PropertyNameRegex = '/var(.*)?\$(?<name>\w+)/';
-    private const TypeNameRegex     = '/var (?<type>[\\a-zA-Z0-9]+)([\[\]]+)? \$?/U';
+    private const PropertyNameRegex = '/@var\s+(?:\??[\w\\\\|<>,]+(?:\s*\[\])*\s+)?\$(?<name>\w+)/';
+    private const TypeNameRegex     = '/@var\s+\??(?<type>\\\\?[A-Za-z_][\w\\\\]*)(?<arrays>(\s*\[\])*)/';
 
     private string $phpDoc;
 
@@ -43,7 +43,7 @@ class PhpDoc
     public function getPropertyType(): mixed
     {
         if (preg_match(self::TypeNameRegex, $this->phpDoc, $regexResult)) {
-            return $regexResult['type'];
+            return ltrim($regexResult['type'], '\\');
         }
 
         return null;
@@ -62,6 +62,10 @@ class PhpDoc
      */
     public function arrayNestedLevel(): int
     {
-        return substr_count($this->phpDoc, '[]');
+        if (preg_match(self::TypeNameRegex, $this->phpDoc, $regexResult)) {
+            return substr_count($regexResult['arrays'] ?? '', '[]');
+        }
+
+        return 0;
     }
 }

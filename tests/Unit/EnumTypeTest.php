@@ -5,7 +5,7 @@ namespace Shureban\LaravelObjectMapper\Tests\Unit;
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\EnumTypeClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\TestEnum;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class EnumTypeTest extends TestCase
 {

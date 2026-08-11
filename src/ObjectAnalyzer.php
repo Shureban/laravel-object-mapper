@@ -2,8 +2,7 @@
 
 namespace Shureban\LaravelObjectMapper;
 
-use ReflectionClass;
-use ReflectionProperty;
+use Shureban\LaravelObjectMapper\Support\ClassMetadata;
 
 class ObjectAnalyzer
 {
@@ -19,10 +18,7 @@ class ObjectAnalyzer
      */
     public function getProperties(): array
     {
-        $reflect      = new ReflectionClass($this->object);
-        $reflectProps = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
-
-        return array_map(fn(ReflectionProperty $property) => new Property($property), $reflectProps);
+        return ClassMetadata::for($this->object)->getProperties();
     }
 
     /**
@@ -32,6 +28,6 @@ class ObjectAnalyzer
      */
     public function hasSetter(string $setterName): bool
     {
-        return (new ReflectionClass($this->object))->hasMethod($setterName);
+        return ClassMetadata::for($this->object)->hasPublicSetter($setterName);
     }
 }

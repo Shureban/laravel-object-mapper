@@ -20,6 +20,17 @@ use Shureban\LaravelObjectMapper\Types\SimpleTypes\StringType;
 return [
     'snake_case_to_camel' => true,
 
+    // Set to true to restore the v1 behavior: Eloquent-typed properties are looked up
+    // via Model::find() without requiring the #[FindModel] attribute.
+    'implicit_model_lookup' => false,
+
+    // When true, an explicit null in the data is assigned to nullable properties
+    // (by default null values are skipped and the property keeps its default).
+    'assign_explicit_null' => false,
+
+    // When true, Serializer/toArray() converts unmapped property names to snake_case.
+    'serialize_snake_case' => false,
+
     'types' => [
         'simple' => [
             'string'  => StringType::class,

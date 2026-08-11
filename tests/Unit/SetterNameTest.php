@@ -2,8 +2,8 @@
 
 namespace Shureban\LaravelObjectMapper\Tests\Unit;
 
-use Shureban\LaravelObjectMapper\Attributes\SetterName;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Support\SetterName;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class SetterNameTest extends TestCase
 {

@@ -26,6 +26,22 @@ class ArrayOfType extends Type
     }
 
     /**
+     * @return Type
+     */
+    public function getItemType(): Type
+    {
+        return $this->type;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNestedLevel(): int
+    {
+        return $this->nestedLevel;
+    }
+
+    /**
      * @param mixed $value
      *
      * @return array

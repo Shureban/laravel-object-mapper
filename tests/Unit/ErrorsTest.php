@@ -7,7 +7,7 @@ use Shureban\LaravelObjectMapper\Exceptions\WrongConstructorParametersNumberExce
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\CustomTypeWithConstructorClass;
 use stdClass;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class ErrorsTest extends TestCase
 {

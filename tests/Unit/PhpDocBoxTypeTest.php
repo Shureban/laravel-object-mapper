@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use DateTime;
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\PhpDocBoxTypeClass;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class PhpDocBoxTypeTest extends TestCase
 {

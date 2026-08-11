@@ -7,7 +7,7 @@
         "object",
         "shureban"
     ],
-    "type": "laravel-package",
+    "type": "library",
     "license": "MIT",
     "authors": [
         {
@@ -17,7 +17,7 @@
         }
     ],
     "minimum-stability": "dev",
-    "version": "1.2.0",
+    "version": "2.0.0",
     "autoload": {
         "psr-4": {
             "Shureban\\LaravelObjectMapper\\": "src/"
@@ -29,7 +29,20 @@
         }
     },
     "require": {
-        "php": "^8.1"
+        "php": "^8.1",
+        "ext-json": "*",
+        "illuminate/support": "^9.0|^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "laravel/framework": "^9.0|^10.0|^11.0|^12.0",
+        "phpunit/phpunit": "^9.6|^10.5|^11.0"
+    },
+    "suggest": {
+        "illuminate/database": "Required to map properties typed as Eloquent models (EloquentType)"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "XDEBUG_MODE=coverage phpunit --coverage-text"
     },
     "prefer-stable": true,
     "extra": {

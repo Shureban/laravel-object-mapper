@@ -5,7 +5,8 @@ namespace Shureban\LaravelObjectMapper\Tests\Unit;
 use Path\To\Class as TestClass;
 use ReflectionClass;
 use Shureban\LaravelObjectMapper\ClassExtraInformation;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\Unit\Structs\Import2Target;
 
 class TestObject
 {
@@ -34,12 +35,16 @@ class ClassExtraInformationTest extends TestCase
             (new ClassExtraInformation($class))->getFullObjectUseNamespace('TestClass')
         );
         $this->assertEquals(
-            'Tests\TestCase',
+            'Shureban\LaravelObjectMapper\Tests\TestCase',
             (new ClassExtraInformation($class))->getFullObjectUseNamespace('TestCase')
         );
         $this->assertEquals(
             'ReflectionClass',
             (new ClassExtraInformation($class))->getFullObjectUseNamespace('ReflectionClass')
+        );
+        $this->assertEquals(
+            'Shureban\LaravelObjectMapper\Tests\Unit\Structs\Import2Target',
+            (new ClassExtraInformation($class))->getFullObjectUseNamespace('Import2Target')
         );
     }
 }

@@ -3,7 +3,7 @@
 namespace Shureban\LaravelObjectMapper\Tests\Unit;
 
 use Shureban\LaravelObjectMapper\PhpDoc;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class PhpDocTest extends TestCase
 {
@@ -30,7 +30,7 @@ DOC
         $this->assertEquals('string', (new PhpDoc('/** @var string $variable */'))->getPropertyType());
         $this->assertEquals('SomeClass', (new PhpDoc('/** @var SomeClass $variable */'))->getPropertyType());
         $this->assertEquals('Path\To\Some\Class', (new PhpDoc('/** @var Path\To\Some\Class $variable */'))->getPropertyType());
-        $this->assertEquals('\Path\To\Some\Class', (new PhpDoc('/** @var \Path\To\Some\Class $variable */'))->getPropertyType());
+        $this->assertEquals('Path\To\Some\Class', (new PhpDoc('/** @var \Path\To\Some\Class $variable */'))->getPropertyType());
         $this->assertEquals('string', (new PhpDoc(<<<DOC
 /**
 * @var string \$variable
@@ -55,6 +55,28 @@ DOC
 */
 DOC
         ))->isArrayOf());
+    }
+
+    public function test_dollarWordInDescriptionIsNotPropertyName()
+    {
+        $this->assertNull((new PhpDoc('/** @var int Price in $USD */'))->getPropertyName());
+        $this->assertNull((new PhpDoc('/** @var int Count of $items */'))->getPropertyName());
+        $this->assertNull((new PhpDoc(<<<DOC
+/**
+* Some description.
+* @var int Count of \$items
+*/
+DOC
+        ))->getPropertyName());
+        $this->assertEquals('price', (new PhpDoc('/** @var int $price Price in $USD */'))->getPropertyName());
+    }
+
+    public function test_spaceBetweenTypeAndBracketsIsStillArrayNotation()
+    {
+        $this->assertTrue((new PhpDoc('/** @var Item [] $items */'))->isArrayOf());
+        $this->assertEquals(1, (new PhpDoc('/** @var Item [] $items */'))->arrayNestedLevel());
+        $this->assertEquals('items', (new PhpDoc('/** @var Item [] $items */'))->getPropertyName());
+        $this->assertEquals('Item', (new PhpDoc('/** @var Item [] $items */'))->getPropertyType());
     }
 
     public function test_arrayNestedLevel()

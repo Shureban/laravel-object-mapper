@@ -6,9 +6,9 @@ use ReflectionClass;
 
 class ClassExtraInformation
 {
-    private const NamespaceRegex    = '/namespace (?<namespace>[\\a-zA-Z0-9]+)(as .*)?;/U';
-    private const UseRegex          = '/^use.*$/m';
-    private const UseNamespaceRegex = '/use (?<namespace>[\\a-zA-Z]+\\\(?<name>[a-zA-Z]+))( as (?<alias>\w+))?;/U';
+    private const NamespaceRegex    = '/namespace\s+(?<namespace>[\w\\\\]+)\s*;/';
+    private const UseRegex          = '/^use\s.*$/m';
+    private const UseNamespaceRegex = '/use\s+(?<namespace>\\\\?[\w\\\\]+\\\\(?<name>\w+))(\s+as\s+(?<alias>\w+))?\s*;/';
 
     private ReflectionClass $class;
     private string          $content = '';

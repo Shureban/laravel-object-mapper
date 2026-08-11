@@ -5,12 +5,14 @@ namespace Shureban\LaravelObjectMapper\Tests\Unit;
 use Shureban\LaravelObjectMapper\ObjectMapper;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\ModelTypeClass;
 use Shureban\LaravelObjectMapper\Tests\Unit\Structs\SomeModel;
-use Tests\TestCase;
+use Shureban\LaravelObjectMapper\Tests\TestCase;
 
 class ModelTypeTest extends TestCase
 {
     public function test_Model()
     {
+        config()->set('object_mapper.implicit_model_lookup', true);
+
         $model              = new ModelTypeClass();
         $model->phpDocModel = new SomeModel(10);
         $model->setterModel = new SomeModel(20);
