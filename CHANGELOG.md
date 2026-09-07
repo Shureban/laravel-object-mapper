@@ -39,6 +39,7 @@ Focus: predictable error handling. Every malformed input now throws a subclass o
 
 ### Added
 
+- Laravel 13 support (`illuminate/support ^13.0`); PHPUnit 12 allowed in `require-dev`.
 - `InvalidJsonStructureException` — `mapFromJson()` now rejects JSON that decodes to a scalar or `null`
   (`'null'`, `'123'`, `'"str"'`, `'true'`) instead of crashing with a `TypeError`.
 - `InvalidDateTimeValueException` — thrown by Carbon/DateTime mapping for empty, non-string and unparseable values

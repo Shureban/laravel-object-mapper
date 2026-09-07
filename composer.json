@@ -17,7 +17,7 @@
         }
     ],
     "minimum-stability": "dev",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "autoload": {
         "psr-4": {
             "Shureban\\LaravelObjectMapper\\": "src/"
@@ -31,11 +31,11 @@
     "require": {
         "php": "^8.1",
         "ext-json": "*",
-        "illuminate/support": "^9.0|^10.0|^11.0|^12.0"
+        "illuminate/support": "^9.0|^10.0|^11.0|^12.0|^13.0"
     },
     "require-dev": {
-        "laravel/framework": "^9.0|^10.0|^11.0|^12.0",
-        "phpunit/phpunit": "^9.6|^10.5|^11.0"
+        "laravel/framework": "^9.0|^10.0|^11.0|^12.0|^13.0",
+        "phpunit/phpunit": "^9.6|^10.5|^11.0|^12.0"
     },
     "suggest": {
         "illuminate/database": "Required to map properties typed as Eloquent models (EloquentType)"
